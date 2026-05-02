@@ -112,11 +112,23 @@ Enemy
 
 Grid
   - size: int = 4
+  - tiles: dict[Position, Tile]
   - in_bounds(pos: Position) -> bool
   - is_occupied(pos: Position) -> bool
+  - is_passable(pos: Position) -> bool          # false for walls, pits
   - get_targets(origin: Position, pattern: AttackPattern) -> list[Position]
   - place(entity_id, pos: Position)
   - remove(entity_id)
+
+Tile
+  - position: Position
+  - obstacle: Obstacle | None
+  - occupant_id: str | None
+
+Obstacle(type: Literal["wall", "pit", "boulder"])
+  - wall: blocks movement and attack patterns (line blocked)
+  - pit: blocks movement only (attack patterns pass over)
+  - boulder: blocks movement; can be destroyed by AoE cards
 ```
 
 ### Supporting Types
@@ -125,9 +137,10 @@ Grid
 CardContext(player: Player, targets: list[Position], enemies: list[Enemy])
   - passed to Card.apply(); gives the card everything it needs to resolve effects
 
-GridSnapshot(positions: dict[str, Position], hp: dict[str, int])
+GridSnapshot(positions: dict[str, Position], hp: dict[str, int], obstacles: dict[Position, Obstacle])
   - read-only view of the grid passed to enemy.choose_intent()
   - avoids giving Enemy a mutable reference to Grid
+  - obstacles included so enemy AI can path around walls/pits
 
 Encounter(enemy_definitions: list[EnemyDef], layout: list[Position])
   - data loaded from run_repository describing which enemies spawn where
@@ -138,10 +151,18 @@ Encounter(enemy_definitions: list[EnemyDef], layout: list[Position])
 ```python
 FusionEngine
   - SYNERGY_TABLE: dict[frozenset[CardTag], CardDefinition]
-    - e.g. {Electric, Area} → "Electric Nova" (hits all adjacent tiles)
-    - e.g. {Fire, Blade}   → "Flame Edge" (line attack + burn status)
+    - e.g. {Electric, Area} → "Electric Nova"  (hits all adjacent tiles)
+    - e.g. {Fire, Blade}   → "Flame Edge"      (line attack + burn status)
+    - e.g. {Buffer, Any}   → fused card gains "Draw 1" effect after resolving
   - fuse(card_a: Card, card_b: Card) -> Card | None
 ```
+
+**Card Economy rule:** Fusion is a 2-for-1 trade, so fused cards must always be worth more than the sum of their parts. Design constraint: every entry in `SYNERGY_TABLE` must satisfy at least one of:
+- Deals damage equal to both source cards combined + a bonus (raw impact)
+- Applies a lasting status effect (burn, stun, slow) that pays off over future turns
+- Includes "Draw 1" so the hand loss is partially recovered
+
+This is enforced during card design, not in code. The `FusionEngine` is data-driven — the `cards.json` fused card definition carries the `draw_after_play: true` flag if applicable.
 
 ### Domain Events
 
@@ -154,6 +175,8 @@ IntentBroadcast(enemy_id, intent: Intent)
 BattleTurnStarted(turn_number, ap_refreshed: int)
 BattleEnded(outcome: Literal["victory", "defeat"])
 CardDrawn(card_id)
+ObstaclePlaced(pos: Position, obstacle: Obstacle)
+EnemyOrderAssigned(enemy_id, order: int)
 ```
 
 ---
@@ -255,6 +278,7 @@ Each scene subscribes to relevant domain events on enter and unsubscribes on exi
 - Grid tiles: stone texture, dark brown border, subtle inner shadow
 - Player tile highlight: warm gold glow
 - Enemy intent preview: targeted tiles tint red, countdown number displayed
+- **Order of Action**: when 2+ enemies are present, each enemy displays its action order number (1, 2, 3) above its sprite. Order is determined at turn start by `EnemyTakeTurnUseCase` processing sequence (fastest/lowest HP first). Players use this to prioritise which enemy to eliminate before taking damage.
 - Cards: parchment-style background, tag color-coded border, hover → slight scale-up (Lerp)
 - Lerp used for all entity movement between tiles (snappy ~150ms slide)
 
@@ -273,7 +297,25 @@ Each scene subscribes to relevant domain events on enter and unsubscribes on exi
   "pattern": "line",
   "damage": 4,
   "grants_ap": 0,
+  "draw_after_play": 0,
+  "status_effect": null,
   "description": "Strike in a line of 3 tiles."
+}
+```
+
+Fused card example:
+```json
+{
+  "id": "flame_edge",
+  "name": "Flame Edge",
+  "tags": ["Fire", "Blade"],
+  "ap_cost": 0,
+  "pattern": "line",
+  "damage": 9,
+  "grants_ap": 0,
+  "draw_after_play": 1,
+  "status_effect": "burn_1",
+  "description": "Fused. Line attack with burn. Draw 1 after."
 }
 ```
 
