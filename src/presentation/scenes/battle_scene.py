@@ -1,0 +1,39 @@
+from __future__ import annotations
+import pygame
+from src.domain.interfaces import IBattleRepository, IEventBus
+from src.use_cases.move_entity import MoveEntityUseCase
+from src.presentation.renderers.grid_renderer import GridRenderer
+from src.presentation.renderers.entity_renderer import EntityRenderer
+from src.presentation.input_handler import InputHandler
+
+COLOR_BG = (10, 8, 6)
+
+class BattleScene:
+    def __init__(
+        self,
+        battle_repo: IBattleRepository,
+        event_bus: IEventBus,
+    ) -> None:
+        self._repo = battle_repo
+        move_use_case = MoveEntityUseCase(battle_repo, event_bus)
+        self._grid_renderer = GridRenderer()
+        self._entity_renderer = EntityRenderer(self._grid_renderer)
+        self._input_handler = InputHandler(move_use_case, battle_repo)
+
+    def on_enter(self) -> None:
+        pass
+
+    def on_exit(self) -> None:
+        pass
+
+    def handle_event(self, event: pygame.event.Event) -> None:
+        self._input_handler.handle_event(event)
+
+    def update(self, dt: float) -> None:
+        state = self._repo.get()
+        self._entity_renderer.update(dt, state.player)
+
+    def render(self, surface: pygame.Surface) -> None:
+        state = self._repo.get()
+        self._grid_renderer.render(surface, state.grid)
+        self._entity_renderer.render(surface, state.player)
