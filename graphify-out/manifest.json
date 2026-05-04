@@ -1,0 +1,190 @@
+{
+  "E:\\Coding\\pygame\\main.py": {
+    "mtime": 1777741794.4681468,
+    "hash": "c0648d42f153ec1959d437347456129a"
+  },
+  "E:\\Coding\\pygame\\src\\__init__.py": {
+    "mtime": 1777735588.6772342,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\battle_state.py": {
+    "mtime": 1777738987.8229036,
+    "hash": "11030723e42aedaa3d40f694310b1947"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\interfaces.py": {
+    "mtime": 1777738983.9215343,
+    "hash": "eb5d5c0f8ca6d097ccf34b43749e644b"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\__init__.py": {
+    "mtime": 1777735589.6998768,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\entities\\grid.py": {
+    "mtime": 1777738399.6945908,
+    "hash": "ad4ab657e8509d518c901740e5d7fd7f"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\entities\\player.py": {
+    "mtime": 1777738668.9084537,
+    "hash": "49280d331903725499d43632f36e9549"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\entities\\tile.py": {
+    "mtime": 1777737175.3764362,
+    "hash": "4eb42056bd9e18263f8659b7be87108f"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\entities\\__init__.py": {
+    "mtime": 1777735592.770216,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\events\\base.py": {
+    "mtime": 1777736307.8691876,
+    "hash": "7235fc45d56cc5500c7a8e5bf733e023"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\events\\battle_events.py": {
+    "mtime": 1777736313.1856308,
+    "hash": "977b7f521bd2c40179e0a9da48cdcf8c"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\events\\__init__.py": {
+    "mtime": 1777736317.7422357,
+    "hash": "1bd52d030d5e09ce72781e6c2bd86d9b"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\value_objects\\attack_pattern.py": {
+    "mtime": 1777736072.1851335,
+    "hash": "cd2fe07339808927263ede6bce28dd80"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\value_objects\\position.py": {
+    "mtime": 1777735889.3097649,
+    "hash": "5ef4ba8851044078f864740a250abad5"
+  },
+  "E:\\Coding\\pygame\\src\\domain\\value_objects\\__init__.py": {
+    "mtime": 1777735590.720428,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\infrastructure\\battle_repository.py": {
+    "mtime": 1777739190.9468212,
+    "hash": "a0ef4d30712e5a68ff20b6694e537015"
+  },
+  "E:\\Coding\\pygame\\src\\infrastructure\\event_bus.py": {
+    "mtime": 1777739297.729451,
+    "hash": "0fe55effc6fef6ab844af314beae6163"
+  },
+  "E:\\Coding\\pygame\\src\\infrastructure\\__init__.py": {
+    "mtime": 1777735593.7905376,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\game_state_manager.py": {
+    "mtime": 1777740637.3847055,
+    "hash": "bec71b13d725f0e9218f3e2940c71ac8"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\input_handler.py": {
+    "mtime": 1777741681.5112598,
+    "hash": "8773fe88d6b6853a78c0eeb0dd5be34a"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\__init__.py": {
+    "mtime": 1777735595.8296118,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\renderers\\entity_renderer.py": {
+    "mtime": 1777741538.8661768,
+    "hash": "968e614544502e3f9162ede6f752f70b"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\renderers\\grid_renderer.py": {
+    "mtime": 1777740912.7203548,
+    "hash": "1393492d73a4d33cd2fa63d9fcd17c8c"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\renderers\\__init__.py": {
+    "mtime": 1777735597.887339,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\scenes\\battle_scene.py": {
+    "mtime": 1777741786.3907545,
+    "hash": "df7d80063eaa4616fdd03e4b598f6169"
+  },
+  "E:\\Coding\\pygame\\src\\presentation\\scenes\\__init__.py": {
+    "mtime": 1777735596.8657153,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\src\\use_cases\\move_entity.py": {
+    "mtime": 1777740148.376308,
+    "hash": "02082a4fb086f5a6575d16ab25506272"
+  },
+  "E:\\Coding\\pygame\\src\\use_cases\\start_battle.py": {
+    "mtime": 1777740477.4531548,
+    "hash": "4fccd41f6e3ce79cbc68f8fc81f3bd70"
+  },
+  "E:\\Coding\\pygame\\src\\use_cases\\__init__.py": {
+    "mtime": 1777735594.8105857,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\__init__.py": {
+    "mtime": 1777735598.9175158,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\__init__.py": {
+    "mtime": 1777735599.9503405,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\entities\\test_grid.py": {
+    "mtime": 1777738388.2945185,
+    "hash": "94fcd1790390b73cd97d399e06c80281"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\entities\\test_player.py": {
+    "mtime": 1777738615.2043393,
+    "hash": "2c2434881ad3438e592f04a4f374c7b8"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\entities\\__init__.py": {
+    "mtime": 1777735602.0105338,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\value_objects\\test_position.py": {
+    "mtime": 1777735880.3917215,
+    "hash": "f8b88316c569618b6f2f9492924840d9"
+  },
+  "E:\\Coding\\pygame\\tests\\domain\\value_objects\\__init__.py": {
+    "mtime": 1777735600.9823291,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\infrastructure\\test_battle_repository.py": {
+    "mtime": 1777739175.9408085,
+    "hash": "e9b9033227304e5b76d7e3b9ccc8939d"
+  },
+  "E:\\Coding\\pygame\\tests\\infrastructure\\__init__.py": {
+    "mtime": 1777735603.0387597,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\tests\\use_cases\\test_move_entity.py": {
+    "mtime": 1777740127.5891278,
+    "hash": "9922483214f1106c25148a9be91aa933"
+  },
+  "E:\\Coding\\pygame\\tests\\use_cases\\test_start_battle.py": {
+    "mtime": 1777740466.0013328,
+    "hash": "d3fc992f1790f0286948742ee0ee6f7c"
+  },
+  "E:\\Coding\\pygame\\tests\\use_cases\\__init__.py": {
+    "mtime": 1777735604.066417,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\Coding\\pygame\\pytest_output.txt": {
+    "mtime": 1777741631.749077,
+    "hash": "6d0ccb475f3d9bf776ad0db9aaaf8f92"
+  },
+  "E:\\Coding\\pygame\\requirements.txt": {
+    "mtime": 1777735584.9044042,
+    "hash": "095f37f2fee168954e29ea5bdd773ec0"
+  },
+  "E:\\Coding\\pygame\\test_output.txt": {
+    "mtime": 1777741366.391844,
+    "hash": "6d0ccb475f3d9bf776ad0db9aaaf8f92"
+  },
+  "E:\\Coding\\pygame\\docs\\superpowers\\plans\\2026-05-02-phase1-domain-grid-movement.md": {
+    "mtime": 1777735192.3936965,
+    "hash": "2f8c68023f4b3505bf534377580a99af"
+  },
+  "E:\\Coding\\pygame\\docs\\superpowers\\plans\\2026-05-04-phase2-card-system.md": {
+    "mtime": 1777830554.609785,
+    "hash": "84c03766d3153f399a1fe91ef56bb763"
+  },
+  "E:\\Coding\\pygame\\docs\\superpowers\\specs\\2026-05-02-dungeon-card-roguelike-design.md": {
+    "mtime": 1777734294.4358654,
+    "hash": "e548fa394b3aff0d95b691bbace8aa27"
+  }
+}

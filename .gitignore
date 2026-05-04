@@ -35,3 +35,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Graphify - ignore generated outputs, keep cache to avoid re-spending tokens
+graphify-out/graph.html
+graphify-out/.graphify_*.json
+graphify-out/obsidian/
