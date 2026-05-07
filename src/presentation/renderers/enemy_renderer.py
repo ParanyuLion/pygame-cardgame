@@ -36,7 +36,7 @@ class EnemyRenderer:
         bar_x = cx - bar_w // 2
         bar_y = cy - radius - 14
         pygame.draw.rect(surface, COLOR_HP_BG, (bar_x, bar_y, bar_w, bar_h))
-        fill_w = int(bar_w * enemy.hp / enemy.max_hp)
+        fill_w = int(bar_w * enemy.hp / enemy.max_hp) if enemy.max_hp > 0 else 0
         if fill_w > 0:
             pygame.draw.rect(surface, COLOR_HP_FG, (bar_x, bar_y, fill_w, bar_h))
 

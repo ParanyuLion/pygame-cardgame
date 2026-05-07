@@ -27,7 +27,7 @@ class IntentRenderer:
                 self._tint_tile(surface, pos)
             cx, cy = self._grid.tile_center(enemy.position)
             cd_surf = self._font.render(str(enemy.intent.countdown), True, COLOR_COUNTDOWN)
-            surface.blit(cd_surf, (cx + 4, cy - 12))
+            surface.blit(cd_surf, (cx - cd_surf.get_width() // 2, cy - cd_surf.get_height() // 2))
 
     def _tint_tile(self, surface: pygame.Surface, pos: Position) -> None:
         x, y = self._grid.tile_to_screen(pos)
