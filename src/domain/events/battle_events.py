@@ -48,11 +48,6 @@ class IntentBroadcast(DomainEvent):
     countdown: int
 
 @dataclass(frozen=True)
-class EnemyOrderAssigned(DomainEvent):
-    enemy_id: str
-    order: int
-
-@dataclass(frozen=True)
 class ObstaclePlaced(DomainEvent):
     pos: Position
     obstacle_type: str

@@ -8,7 +8,6 @@ from .battle_events import (
     CardsFused,
     CardDrawn,
     IntentBroadcast,
-    EnemyOrderAssigned,
     ObstaclePlaced,
 )
 
@@ -22,6 +21,5 @@ __all__ = [
     "CardsFused",
     "CardDrawn",
     "IntentBroadcast",
-    "EnemyOrderAssigned",
     "ObstaclePlaced",
 ]

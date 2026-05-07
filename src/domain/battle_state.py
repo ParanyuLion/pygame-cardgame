@@ -17,4 +17,4 @@ class BattleState:
     deck: list[Card] = field(default_factory=list)
     discard: list[Card] = field(default_factory=list)
     turn_number: int = 1
-    fused_card_ids: set = field(default_factory=set)
+    fused_card_ids: set[str] = field(default_factory=set)

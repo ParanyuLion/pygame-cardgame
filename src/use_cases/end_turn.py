@@ -26,6 +26,8 @@ class EndTurnUseCase:
         positions["player"] = state.player.position
         hp = {e.id: e.hp for e in state.enemies}
         hp["player"] = state.player.hp
+        # Snapshot reflects turn-start state; choose_intent receives stale data for
+        # enemies that act after the first. Acceptable while choose_intent ignores it.
         snapshot = GridSnapshot(positions=positions, hp=hp)
 
         ordered = sorted(
