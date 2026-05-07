@@ -1,6 +1,5 @@
 from __future__ import annotations
 from src.domain.entities.card import Card
-from src.domain.value_objects.card_tag import CardTag
 
 
 class FusionEngine:
@@ -25,4 +24,5 @@ class FusionEngine:
             pattern=pattern,
             grants_ap=card_a.grants_ap + card_b.grants_ap,
             draw_after_play=card_a.draw_after_play + card_b.draw_after_play,
+            # status_effect and description: Phase 4 will define merge rules
         )
