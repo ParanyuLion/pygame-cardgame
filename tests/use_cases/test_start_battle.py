@@ -60,8 +60,6 @@ def test_start_battle_grid_is_4x4():
     state = repo.get()
     assert len(state.grid.tiles) == 16
 
-# --- New tests for deck + opening hand ---
-
 def test_start_battle_draws_opening_hand_of_five():
     use_case, repo, _ = make_use_case()
     use_case.execute(Encounter(player_start=Position(0, 0)))
@@ -76,8 +74,6 @@ def test_start_battle_publishes_card_drawn_events():
     draw_events = [e for e in events if isinstance(e, CardDrawn)]
     assert len(draw_events) == 5
 
-
-# --- Enemy placement tests ---
 
 def _make_use_case_mock() -> tuple[StartBattleUseCase, MagicMock]:
     battle_repo = MagicMock()
@@ -131,17 +127,13 @@ def test_encounter_player_hp_override_sets_initial_hp():
     repo.save.side_effect = lambda s: state_holder.update({"state": s})
     repo.get.side_effect = lambda: state_holder["state"]
 
-    from src.use_cases.start_battle import StartBattleUseCase, Encounter
-    from src.domain.value_objects.position import Position
     encounter = Encounter(player_start=Position(0, 0), player_hp=15)
     StartBattleUseCase(repo, bus, card_repo).execute(encounter)
     assert state_holder["state"].player.hp == 15
+    assert state_holder["state"].player.max_hp == 30
 
 
 def test_encounter_deck_override_is_used_instead_of_repo():
-    from src.domain.entities.card import Card
-    from src.domain.value_objects.card_tag import CardTag
-    from src.domain.value_objects.attack_pattern import AttackPattern
     custom = Card(id="custom_1", name="Custom", tags=[CardTag("Blade")],
                   ap_cost=1, pattern=AttackPattern.single(), damage=3)
     repo = MagicMock()
@@ -151,8 +143,6 @@ def test_encounter_deck_override_is_used_instead_of_repo():
     repo.save.side_effect = lambda s: state_holder.update({"state": s})
     repo.get.side_effect = lambda: state_holder["state"]
 
-    from src.use_cases.start_battle import StartBattleUseCase, Encounter
-    from src.domain.value_objects.position import Position
     encounter = Encounter(player_start=Position(0, 0), deck=[custom])
     StartBattleUseCase(repo, bus, card_repo).execute(encounter)
     # card_repo.get_starting_deck must NOT be called

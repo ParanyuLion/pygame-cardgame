@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import json
+import random
 from pathlib import Path
 from src.domain.entities.card import Card
 from src.domain.value_objects.card_tag import CardTag
@@ -35,7 +37,6 @@ class CardRepository:
         return result
 
     def get_random_cards(self, n: int) -> list[Card]:
-        import random
         pool = list(self._definitions.keys())
         chosen = random.sample(pool, min(n, len(pool)))
         result: list[Card] = []
