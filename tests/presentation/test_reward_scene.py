@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame
 from src.domain.entities.card import Card
 from src.domain.value_objects.card_tag import CardTag

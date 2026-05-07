@@ -1,5 +1,6 @@
 from __future__ import annotations
 import pygame
+from src.domain.entities.card import Card
 
 _CARD_W = 120
 _CARD_H = 180
@@ -24,7 +25,7 @@ class CardRewardRenderer:
         x = start_x + idx * (_CARD_W + _CARD_GAP)
         return pygame.Rect(x, _CARD_TOP, _CARD_W, _CARD_H)
 
-    def render(self, surface: pygame.Surface, cards: list) -> None:
+    def render(self, surface: pygame.Surface, cards: list[Card]) -> None:
         heading = self._font_heading.render("Choose a reward:", True, _COLOR_HEADING)
         surface.blit(heading, (_W // 2 - heading.get_width() // 2, 140))
         for i, card in enumerate(cards):
