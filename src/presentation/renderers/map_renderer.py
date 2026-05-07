@@ -1,6 +1,9 @@
 from __future__ import annotations
 import pygame
-from src.domain.run_state import MapNode
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.domain.run_state import MapNode
 
 _NODE_R = 25        # circle radius
 _NODE_Y = 350       # vertical center
