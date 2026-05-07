@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from src.domain.value_objects.card_tag import CardTag
 from src.domain.value_objects.attack_pattern import AttackPattern
