@@ -1,11 +1,12 @@
+from __future__ import annotations
 import pygame
 from src.infrastructure.battle_repository import InMemoryBattleRepository
+from src.infrastructure.run_repository import InMemoryRunRepository
 from src.infrastructure.event_bus import PygameEventBus
 from src.infrastructure.card_repository import CardRepository
-from src.use_cases.start_battle import StartBattleUseCase, Encounter, EnemyDef
-from src.domain.value_objects.position import Position
 from src.presentation.game_state_manager import GameStateManager
-from src.presentation.scenes.battle_scene import BattleScene
+from src.presentation.scenes.menu_scene import MenuScene
+from src.presentation.game_controller import GameController
 
 WINDOW_WIDTH = 560
 WINDOW_HEIGHT = 700
@@ -21,19 +22,16 @@ def main() -> None:
 
     event_bus = PygameEventBus()
     battle_repo = InMemoryBattleRepository()
+    run_repo = InMemoryRunRepository()
     card_repo = CardRepository()
 
-    StartBattleUseCase(battle_repo, event_bus, card_repo).execute(
-        Encounter(
-            player_start=Position(0, 0),
-            enemies=[
-                EnemyDef(id="enemy_1", position=Position(3, 3), hp=20, base_damage=4),
-            ],
-        )
-    )
+    # start_new_run is a closure — controller is assigned below and captured by reference
+    def start_new_run() -> None:
+        controller.start_new_run()
 
-    battle_scene = BattleScene(battle_repo, event_bus)
-    gsm = GameStateManager(initial_scene=battle_scene)
+    menu_scene = MenuScene(on_start_run=start_new_run)
+    gsm = GameStateManager(initial_scene=menu_scene)
+    controller = GameController(gsm, run_repo, battle_repo, event_bus, card_repo)
 
     running = True
     while running:
