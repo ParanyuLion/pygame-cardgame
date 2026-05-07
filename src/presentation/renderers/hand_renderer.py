@@ -27,9 +27,19 @@ class HandRenderer:
         self._selected_id: str | None = None
         self._font_name: pygame.font.Font | None = None
         self._font_cost: pygame.font.Font | None = None
+        self._drag_card: Card | None = None
+        self._drag_pos: tuple[int, int] | None = None
 
     def set_selected(self, card_id: str | None) -> None:
         self._selected_id = card_id
+
+    def set_drag(self, card: Card, pos: tuple[int, int]) -> None:
+        self._drag_card = card
+        self._drag_pos = pos
+
+    def clear_drag(self) -> None:
+        self._drag_card = None
+        self._drag_pos = None
 
     def card_rect(self, index: int, hand_size: int) -> pygame.Rect:
         total_w = hand_size * CARD_W + max(0, hand_size - 1) * CARD_GAP
@@ -71,3 +81,17 @@ class HandRenderer:
 
             desc_surf = self._font_name.render(card.description[:18], True, COLOR_TEXT)
             surface.blit(desc_surf, (rect.x + 4, rect.y + 18))
+
+        self._render_drag_ghost(surface)
+
+    def _render_drag_ghost(self, surface: pygame.Surface) -> None:
+        if self._drag_card is None or self._drag_pos is None:
+            return
+        ghost = pygame.Surface((CARD_W, CARD_H), pygame.SRCALPHA)
+        first_tag = self._drag_card.tags[0].value if self._drag_card.tags else ""
+        border_color = _TAG_BORDER.get(first_tag, _DEFAULT_BORDER)
+        ghost.fill((*COLOR_CARD_BG, 180))
+        pygame.draw.rect(ghost, (*border_color, 220), ghost.get_rect(), width=3, border_radius=4)
+        x = self._drag_pos[0] - CARD_W // 2
+        y = self._drag_pos[1] - CARD_H // 2
+        surface.blit(ghost, (x, y))
