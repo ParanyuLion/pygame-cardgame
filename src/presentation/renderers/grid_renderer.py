@@ -52,3 +52,20 @@ class GridRenderer:
     def tile_center(self, pos: Position) -> tuple[int, int]:
         x, y = self.tile_to_screen(pos)
         return x + TILE_SIZE // 2, y + TILE_SIZE // 2
+
+    def screen_to_tile(self, x: int, y: int) -> Position | None:
+        rel_x = x - GRID_OFFSET_X
+        rel_y = y - GRID_OFFSET_Y
+        if rel_x < 0 or rel_y < 0:
+            return None
+        col = rel_x // (TILE_SIZE + TILE_GAP)
+        row = rel_y // (TILE_SIZE + TILE_GAP)
+        # Reject clicks that land in the gap between tiles
+        if rel_x % (TILE_SIZE + TILE_GAP) >= TILE_SIZE:
+            return None
+        if rel_y % (TILE_SIZE + TILE_GAP) >= TILE_SIZE:
+            return None
+        try:
+            return Position(col, row)
+        except ValueError:
+            return None
