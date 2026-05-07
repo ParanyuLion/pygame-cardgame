@@ -1,22 +1,31 @@
+import random
 from dataclasses import dataclass
-from src.domain.interfaces import IBattleRepository, IEventBus
+from src.domain.interfaces import IBattleRepository, IEventBus, ICardRepository
 from src.domain.battle_state import BattleState
 from src.domain.entities.player import Player
 from src.domain.entities.grid import Grid
 from src.domain.value_objects.position import Position
 from src.domain.events.battle_events import BattleTurnStarted
+from src.domain.services.deck_manager import DeckManager
 
 PLAYER_MAX_HP = 30
 PLAYER_MAX_AP = 3
+OPENING_HAND_SIZE = 5
 
 @dataclass
 class Encounter:
     player_start: Position
 
 class StartBattleUseCase:
-    def __init__(self, battle_repo: IBattleRepository, event_bus: IEventBus) -> None:
+    def __init__(
+        self,
+        battle_repo: IBattleRepository,
+        event_bus: IEventBus,
+        card_repo: ICardRepository,
+    ) -> None:
         self._repo = battle_repo
         self._bus = event_bus
+        self._card_repo = card_repo
 
     def execute(self, encounter: Encounter) -> None:
         grid = Grid()
@@ -30,6 +39,19 @@ class StartBattleUseCase:
         )
         grid.place("player", encounter.player_start)
 
-        state = BattleState(player=player, grid=grid)
+        deck = self._card_repo.get_starting_deck()
+        random.shuffle(deck)
+
+        state = BattleState(player=player, grid=grid, deck=deck)
+
+        draw_events = []
+        for _ in range(OPENING_HAND_SIZE):
+            event = DeckManager.draw(state.deck, state.hand, state.discard)
+            if event is None:
+                break
+            draw_events.append(event)
+
         self._repo.save(state)
         self._bus.publish(BattleTurnStarted(turn_number=1, ap_refreshed=PLAYER_MAX_AP))
+        for event in draw_events:
+            self._bus.publish(event)
