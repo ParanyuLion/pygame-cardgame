@@ -64,7 +64,7 @@ class GameController:
         run.advance_node()
 
         if run.is_floor_complete():
-            if run.floor == 3:
+            if run.floor == len(run.floors):
                 run.run_complete = True
                 self._run_repo.save(run)
                 self._gsm.transition_to(MenuScene(on_start_run=self.start_new_run))
