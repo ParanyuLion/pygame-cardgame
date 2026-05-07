@@ -25,6 +25,7 @@ class Enemy:
         return self.hp > 0
 
     def choose_intent(self, snapshot: GridSnapshot) -> Intent:
+        # snapshot reserved for future multi-enemy AI; caller assigns enemy.intent = enemy.choose_intent(snapshot)
         return Intent(
             type="ATTACK",
             pattern=AttackPattern.cross(),
@@ -33,6 +34,7 @@ class Enemy:
         )
 
     def tick_intent(self) -> Intent:
+        # Pure: returns new Intent; caller assigns enemy.intent = enemy.tick_intent()
         return Intent(
             type=self.intent.type,
             pattern=self.intent.pattern,

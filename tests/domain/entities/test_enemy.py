@@ -55,6 +55,8 @@ def test_enemy_choose_intent_returns_attack_with_countdown_two():
     intent = e.choose_intent(snapshot)
     assert intent.type == "ATTACK"
     assert intent.countdown == 2
+    assert intent.damage == e.base_damage
+    assert intent.pattern == AttackPattern.cross()
 
 
 def test_enemy_tick_intent_decrements_countdown_without_mutating_original():
