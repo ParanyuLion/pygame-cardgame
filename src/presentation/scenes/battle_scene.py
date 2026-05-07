@@ -3,12 +3,14 @@ import pygame
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.use_cases.move_entity import MoveEntityUseCase
 from src.use_cases.play_card import PlayCardUseCase
+from src.use_cases.fuse_cards import FuseCardsUseCase
 from src.presentation.renderers.grid_renderer import GridRenderer
 from src.presentation.renderers.entity_renderer import EntityRenderer
 from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.input_handler import InputHandler
 
 COLOR_BG = (10, 8, 6)
+
 
 class BattleScene:
     def __init__(
@@ -19,12 +21,14 @@ class BattleScene:
         self._repo = battle_repo
         move_use_case = MoveEntityUseCase(battle_repo, event_bus)
         play_use_case = PlayCardUseCase(battle_repo, event_bus)
+        fuse_use_case = FuseCardsUseCase(battle_repo, event_bus)
         self._grid_renderer = GridRenderer()
         self._entity_renderer = EntityRenderer(self._grid_renderer)
         self._hand_renderer = HandRenderer()
         self._input_handler = InputHandler(
             move_use_case,
             play_use_case,
+            fuse_use_case,
             battle_repo,
             self._hand_renderer,
             self._grid_renderer,

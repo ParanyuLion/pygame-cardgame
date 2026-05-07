@@ -4,6 +4,7 @@ from src.domain.interfaces import IBattleRepository
 from src.domain.entities.player import InsufficientAPError
 from src.use_cases.move_entity import MoveEntityUseCase
 from src.use_cases.play_card import PlayCardUseCase
+from src.use_cases.fuse_cards import FuseCardsUseCase
 from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.renderers.grid_renderer import GridRenderer
 
@@ -18,27 +19,40 @@ _ARROW_TO_OFFSET: dict[int, tuple[int, int]] = {
     pygame.K_d:     (1,  0),
 }
 
+_DRAG_THRESHOLD = 8  # Manhattan distance in pixels to confirm drag intent
+
+
 class InputHandler:
     def __init__(
         self,
         move_use_case: MoveEntityUseCase,
         play_use_case: PlayCardUseCase,
+        fuse_use_case: FuseCardsUseCase,
         battle_repo: IBattleRepository,
         hand_renderer: HandRenderer,
         grid_renderer: GridRenderer,
     ) -> None:
         self._move = move_use_case
         self._play = play_use_case
+        self._fuse = fuse_use_case
         self._repo = battle_repo
         self._hand_renderer = hand_renderer
         self._grid_renderer = grid_renderer
         self._selected_card_id: str | None = None
+        self._drag_card_id: str | None = None
+        self._drag_start: tuple[int, int] | None = None
+        self._drag_pos: tuple[int, int] | None = None
+        self._dragging: bool = False
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN:
             self._handle_key(event)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            self._handle_click(event.pos)
+            self._handle_mouse_down(event.pos)
+        elif event.type == pygame.MOUSEMOTION:
+            self._handle_mouse_motion(event.pos, event.buttons)
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self._handle_mouse_up(event.pos)
 
     def _handle_key(self, event: pygame.event.Event) -> None:
         if event.key not in _ARROW_TO_OFFSET:
@@ -53,9 +67,53 @@ class InputHandler:
         except (InsufficientAPError, ValueError):
             pass
 
+    def _handle_mouse_down(self, pos: tuple[int, int]) -> None:
+        state = self._repo.get()
+        clicked_card = self._hand_renderer.card_at_point(pos, state.hand)
+        if clicked_card is not None:
+            self._drag_card_id = clicked_card.id
+            self._drag_start = pos
+            self._drag_pos = pos
+            self._dragging = False
+
+    def _handle_mouse_motion(
+        self, pos: tuple[int, int], buttons: tuple[int, int, int]
+    ) -> None:
+        if not buttons[0] or self._drag_card_id is None:
+            return
+        self._drag_pos = pos
+        if not self._dragging and self._drag_start is not None:
+            dx = abs(pos[0] - self._drag_start[0])
+            dy = abs(pos[1] - self._drag_start[1])
+            if dx + dy > _DRAG_THRESHOLD:
+                self._dragging = True
+        if self._dragging:
+            state = self._repo.get()
+            drag_card = next(
+                (c for c in state.hand if c.id == self._drag_card_id), None
+            )
+            if drag_card is not None:
+                self._hand_renderer.set_drag(drag_card, pos)
+
+    def _handle_mouse_up(self, pos: tuple[int, int]) -> None:
+        if self._dragging and self._drag_card_id is not None:
+            self._hand_renderer.clear_drag()
+            state = self._repo.get()
+            target_card = self._hand_renderer.card_at_point(pos, state.hand)
+            if target_card is not None and target_card.id != self._drag_card_id:
+                try:
+                    self._fuse.execute(self._drag_card_id, target_card.id)
+                except ValueError:
+                    pass
+        else:
+            self._handle_click(pos)
+        self._drag_card_id = None
+        self._drag_start = None
+        self._drag_pos = None
+        self._dragging = False
+
     def _handle_click(self, pos: tuple[int, int]) -> None:
         state = self._repo.get()
-
         clicked_card = self._hand_renderer.card_at_point(pos, state.hand)
         if clicked_card is not None:
             if self._selected_card_id == clicked_card.id:
@@ -64,10 +122,8 @@ class InputHandler:
                 self._selected_card_id = clicked_card.id
             self._hand_renderer.set_selected(self._selected_card_id)
             return
-
         if self._selected_card_id is None:
             return
-
         try:
             self._play.execute(self._selected_card_id)
             self._selected_card_id = None
