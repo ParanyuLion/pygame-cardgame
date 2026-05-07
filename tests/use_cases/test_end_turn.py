@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 from src.domain.battle_state import BattleState
 from src.domain.entities.grid import Grid
@@ -177,3 +176,14 @@ def test_end_turn_enemies_act_in_lowest_hp_first_order():
     broadcasts = [e for e in _published_events(bus) if isinstance(e, IntentBroadcast)]
     ids = [e.enemy_id for e in broadcasts]
     assert ids == ["e2", "e1"]  # e2 lower HP → acts first
+
+
+def test_end_turn_does_nothing_if_player_already_dead():
+    state = _make_state(player=_player(hp=0))
+    repo = MagicMock()
+    repo.get.return_value = state
+    bus = MagicMock()
+    use_case = EndTurnUseCase(repo, bus)
+    use_case.execute()
+    bus.publish.assert_not_called()
+    repo.save.assert_not_called()

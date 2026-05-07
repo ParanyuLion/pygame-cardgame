@@ -1,5 +1,6 @@
 from __future__ import annotations
 from src.domain.interfaces import IBattleRepository, IEventBus
+from src.domain.events.base import DomainEvent
 from src.domain.events.battle_events import (
     BattleTurnStarted, IntentBroadcast, BattleEnded, CardDrawn,
 )
@@ -19,7 +20,7 @@ class EndTurnUseCase:
         if not state.player.is_alive():
             return
 
-        events: list = []
+        events: list[DomainEvent] = []
 
         positions = {e.id: e.position for e in state.enemies}
         positions["player"] = state.player.position
@@ -64,6 +65,8 @@ class EndTurnUseCase:
             drawn = DeckManager.draw(state.deck, state.hand, state.discard)
             if drawn is not None:
                 draw_events.append(drawn)
+            else:
+                break
 
         state.turn_number += 1
 
