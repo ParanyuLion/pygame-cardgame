@@ -1,3 +1,4 @@
+from __future__ import annotations
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.domain.entities.card import CardContext
 from src.domain.events.battle_events import CardPlayed, CardDrawn, BattleEnded
