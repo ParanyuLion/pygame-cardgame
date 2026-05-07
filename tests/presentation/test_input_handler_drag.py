@@ -28,7 +28,7 @@ def _make_state(hand_cards: list[Card]) -> BattleState:
     return state
 
 
-def _make_handler(state: BattleState) -> tuple[InputHandler, MagicMock, HandRenderer]:
+def _make_handler(state: BattleState) -> tuple[InputHandler, MagicMock, MagicMock, HandRenderer]:
     repo = MagicMock()
     repo.get.return_value = state
     move = MagicMock()
@@ -38,14 +38,14 @@ def _make_handler(state: BattleState) -> tuple[InputHandler, MagicMock, HandRend
     hand_renderer = HandRenderer()
     grid_renderer = GridRenderer()
     handler = InputHandler(move, play, fuse, end_turn, repo, hand_renderer, grid_renderer)
-    return handler, fuse, hand_renderer
+    return handler, fuse, end_turn, hand_renderer
 
 
 def test_drag_onto_different_card_calls_fuse():
     card_a = _card("a_1")
     card_b = _card("b_1")
     state = _make_state([card_a, card_b])
-    handler, fuse, hand_renderer = _make_handler(state)
+    handler, fuse, end_turn, hand_renderer = _make_handler(state)
 
     rect_a = hand_renderer.card_rect(0, 2)
     rect_b = hand_renderer.card_rect(1, 2)
@@ -68,7 +68,7 @@ def test_drag_onto_same_card_does_not_fuse():
     card_a = _card("a_1")
     card_b = _card("b_1")
     state = _make_state([card_a, card_b])
-    handler, fuse, hand_renderer = _make_handler(state)
+    handler, fuse, end_turn, hand_renderer = _make_handler(state)
 
     rect_a = hand_renderer.card_rect(0, 2)
     center_a = rect_a.center
@@ -88,7 +88,7 @@ def test_drag_onto_same_card_does_not_fuse():
 def test_click_card_without_drag_selects_it():
     card_a = _card("a_1")
     state = _make_state([card_a])
-    handler, fuse, hand_renderer = _make_handler(state)
+    handler, fuse, end_turn, hand_renderer = _make_handler(state)
 
     rect = hand_renderer.card_rect(0, 1)
     center = rect.center
@@ -98,3 +98,10 @@ def test_click_card_without_drag_selects_it():
 
     assert handler._selected_card_id == "a_1"
     fuse.execute.assert_not_called()
+
+
+def test_e_key_calls_end_turn():
+    state = _make_state([])
+    handler, fuse, end_turn, hand_renderer = _make_handler(state)
+    handler.handle_event(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_e, mod=0, unicode="e"))
+    end_turn.execute.assert_called_once()
