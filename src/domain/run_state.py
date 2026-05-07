@@ -30,7 +30,7 @@ class RunState:
     deck: list[Card]
     player_hp: int
     player_max_hp: int
-    floor: int          # 1–3
+    floor: int
     floors: list[list[MapNode]]
     node_idx: int = 0
     run_complete: bool = False
@@ -46,9 +46,14 @@ class RunState:
         return self.node_idx >= len(self.nodes)
 
     def advance_node(self) -> None:
+        if self.node_idx >= len(self.nodes):
+            raise RuntimeError("advance_node called past end of floor")
         self.nodes[self.node_idx].is_complete = True
         self.node_idx += 1
 
     def advance_floor(self) -> None:
+        if self.floor >= len(self.floors):
+            self.run_complete = True
+            return
         self.floor += 1
         self.node_idx = 0

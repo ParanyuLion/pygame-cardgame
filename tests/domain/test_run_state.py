@@ -48,5 +48,5 @@ def test_advance_floor_moves_to_next_floor_and_resets_idx():
 
 def test_enemy_spec_is_frozen():
     spec = EnemySpec(id="e1", position=Position(1, 1), hp=10, base_damage=3)
-    with pytest.raises(Exception):
+    with pytest.raises(AttributeError):
         spec.hp = 99  # type: ignore[misc]
