@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass, field
 from src.domain.interfaces import IBattleRepository, IEventBus, ICardRepository
 from src.domain.battle_state import BattleState
+from src.domain.entities.card import Card
 from src.domain.entities.player import Player
 from src.domain.entities.enemy import Enemy
 from src.domain.entities.grid import Grid
@@ -28,6 +29,8 @@ class EnemyDef:
 class Encounter:
     player_start: Position
     enemies: list[EnemyDef] = field(default_factory=list)
+    player_hp: int | None = None    # None → use PLAYER_MAX_HP
+    deck: list[Card] | None = None  # None → use card_repo.get_starting_deck()
 
 
 class StartBattleUseCase:
@@ -46,7 +49,7 @@ class StartBattleUseCase:
         player = Player(
             id="player",
             position=encounter.player_start,
-            hp=PLAYER_MAX_HP,
+            hp=encounter.player_hp if encounter.player_hp is not None else PLAYER_MAX_HP,
             max_hp=PLAYER_MAX_HP,
             ap=PLAYER_MAX_AP,
             max_ap=PLAYER_MAX_AP,
@@ -72,7 +75,7 @@ class StartBattleUseCase:
             grid.place(enemy.id, enemy.position)
             enemies.append(enemy)
 
-        deck = self._card_repo.get_starting_deck()
+        deck = list(encounter.deck) if encounter.deck is not None else self._card_repo.get_starting_deck()
         random.shuffle(deck)
 
         state = BattleState(player=player, grid=grid, deck=deck, enemies=enemies)

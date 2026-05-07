@@ -119,3 +119,45 @@ def test_start_battle_enemy_initial_intent_is_attack_countdown_two():
     assert intent.type == "ATTACK"
     assert intent.countdown == 2
     assert intent.damage == 5
+
+
+def test_encounter_player_hp_override_sets_initial_hp():
+    card = _card("step")
+    repo = MagicMock()
+    bus = MagicMock()
+    card_repo = MagicMock()
+    card_repo.get_starting_deck.return_value = [card]
+    state_holder = {}
+    repo.save.side_effect = lambda s: state_holder.update({"state": s})
+    repo.get.side_effect = lambda: state_holder["state"]
+
+    from src.use_cases.start_battle import StartBattleUseCase, Encounter
+    from src.domain.value_objects.position import Position
+    encounter = Encounter(player_start=Position(0, 0), player_hp=15)
+    StartBattleUseCase(repo, bus, card_repo).execute(encounter)
+    assert state_holder["state"].player.hp == 15
+
+
+def test_encounter_deck_override_is_used_instead_of_repo():
+    from src.domain.entities.card import Card
+    from src.domain.value_objects.card_tag import CardTag
+    from src.domain.value_objects.attack_pattern import AttackPattern
+    custom = Card(id="custom_1", name="Custom", tags=[CardTag("Blade")],
+                  ap_cost=1, pattern=AttackPattern.single(), damage=3)
+    repo = MagicMock()
+    bus = MagicMock()
+    card_repo = MagicMock()
+    state_holder = {}
+    repo.save.side_effect = lambda s: state_holder.update({"state": s})
+    repo.get.side_effect = lambda: state_holder["state"]
+
+    from src.use_cases.start_battle import StartBattleUseCase, Encounter
+    from src.domain.value_objects.position import Position
+    encounter = Encounter(player_start=Position(0, 0), deck=[custom])
+    StartBattleUseCase(repo, bus, card_repo).execute(encounter)
+    # card_repo.get_starting_deck must NOT be called
+    card_repo.get_starting_deck.assert_not_called()
+    # custom card ends up in hand or deck (it was drawn or shuffled)
+    state = state_holder["state"]
+    all_cards = state.hand + state.deck + state.discard
+    assert any(c.id == "custom_1" for c in all_cards)
