@@ -26,7 +26,7 @@ def _make_state(hand_cards: list[Card]) -> BattleState:
     return state
 
 
-def _make_use_case(state: BattleState):
+def _make_use_case(state: BattleState) -> tuple[FuseCardsUseCase, MagicMock, MagicMock]:
     repo = MagicMock()
     repo.get.return_value = state
     bus = MagicMock()
@@ -93,10 +93,28 @@ def test_fuse_card_not_in_hand_raises():
         use_case.execute("strike_1", "ghost")
 
 
+def test_fuse_first_card_not_in_hand_raises():
+    b = _card("slash_1", ["Blade"])
+    state = _make_state([b])
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError, match="not in hand"):
+        use_case.execute("ghost", "slash_1")
+
+
+def test_fuse_card_with_itself_raises():
+    a = _card("strike_1", ["Blade"])
+    state = _make_state([a])
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError, match="with itself"):
+        use_case.execute("strike_1", "strike_1")
+
+
 def test_fuse_incompatible_cards_raises():
     a = _card("strike_1", ["Blade"])
     b = _card("spark_1", ["Electric"])
     state = _make_state([a, b])
-    use_case, _, _ = _make_use_case(state)
+    use_case, repo, bus = _make_use_case(state)
     with pytest.raises(ValueError, match="cannot fuse"):
         use_case.execute("strike_1", "spark_1")
+    repo.save.assert_not_called()
+    bus.publish.assert_not_called()

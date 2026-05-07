@@ -9,6 +9,8 @@ class FuseCardsUseCase:
         self._bus = event_bus
 
     def execute(self, card_a_id: str, card_b_id: str) -> None:
+        if card_a_id == card_b_id:
+            raise ValueError(f"Cannot fuse card '{card_a_id}' with itself")
         state = self._repo.get()
         card_a = next((c for c in state.hand if c.id == card_a_id), None)
         if card_a is None:
