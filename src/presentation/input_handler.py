@@ -41,7 +41,6 @@ class InputHandler:
         self._selected_card_id: str | None = None
         self._drag_card_id: str | None = None
         self._drag_start: tuple[int, int] | None = None
-        self._drag_pos: tuple[int, int] | None = None
         self._dragging: bool = False
 
     def handle_event(self, event: pygame.event.Event) -> None:
@@ -73,7 +72,6 @@ class InputHandler:
         if clicked_card is not None:
             self._drag_card_id = clicked_card.id
             self._drag_start = pos
-            self._drag_pos = pos
             self._dragging = False
 
     def _handle_mouse_motion(
@@ -81,7 +79,6 @@ class InputHandler:
     ) -> None:
         if not buttons[0] or self._drag_card_id is None:
             return
-        self._drag_pos = pos
         if not self._dragging and self._drag_start is not None:
             dx = abs(pos[0] - self._drag_start[0])
             dy = abs(pos[1] - self._drag_start[1])
@@ -103,6 +100,8 @@ class InputHandler:
             if target_card is not None and target_card.id != self._drag_card_id:
                 try:
                     self._fuse.execute(self._drag_card_id, target_card.id)
+                    self._selected_card_id = None
+                    self._hand_renderer.set_selected(None)
                 except ValueError:
                     pass
         else:
@@ -110,7 +109,6 @@ class InputHandler:
             self._handle_click(click_pos)
         self._drag_card_id = None
         self._drag_start = None
-        self._drag_pos = None
         self._dragging = False
 
     def _handle_click(self, pos: tuple[int, int]) -> None:
