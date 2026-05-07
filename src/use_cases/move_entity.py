@@ -14,12 +14,19 @@ class MoveEntityUseCase:
         if state.player.id != entity_id:
             raise ValueError(f"Unknown entity: '{entity_id}'")
 
+        move_card = next((c for c in state.hand if c.is_move_card()), None)
+        if move_card is None:
+            raise ValueError("No Move card in hand")
+
         if not state.grid.is_passable(target_pos):
             raise ValueError(
                 f"Position {target_pos} is not passable"
             )
 
         state.player.spend_ap(MOVE_AP_COST)
+
+        state.hand.remove(move_card)
+        state.discard.append(move_card)
 
         state.grid.remove(entity_id)
         event = state.player.move_to(target_pos)

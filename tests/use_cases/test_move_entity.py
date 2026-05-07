@@ -4,18 +4,32 @@ from src.domain.battle_state import BattleState
 from src.domain.entities.grid import Grid
 from src.domain.entities.tile import Obstacle
 from src.domain.entities.player import Player, InsufficientAPError
+from src.domain.entities.card import Card
 from src.domain.value_objects.position import Position
+from src.domain.value_objects.card_tag import CardTag
+from src.domain.value_objects.attack_pattern import AttackPattern
 from src.domain.events.battle_events import EntityMoved
 from src.use_cases.move_entity import MoveEntityUseCase
 
-def make_state(player_pos: Position = Position(1, 1), player_ap: int = 3) -> BattleState:
+def _move_card() -> Card:
+    return Card(id="step_1", name="Step", tags=[CardTag("Move")],
+                ap_cost=1, pattern=AttackPattern.single(), damage=0)
+
+def make_state(
+    player_pos: Position = Position(1, 1),
+    player_ap: int = 3,
+    with_move_card: bool = True,
+) -> BattleState:
     grid = Grid()
     player = Player(
         id="player", position=player_pos,
         hp=30, max_hp=30, ap=player_ap, max_ap=3,
     )
     grid.place("player", player_pos)
-    return BattleState(player=player, grid=grid)
+    state = BattleState(player=player, grid=grid)
+    if with_move_card:
+        state.hand = [_move_card()]
+    return state
 
 def make_use_case(state: BattleState) -> tuple[MoveEntityUseCase, MagicMock, MagicMock]:
     repo = MagicMock()
@@ -83,3 +97,19 @@ def test_move_unknown_entity_raises():
     use_case, _, _ = make_use_case(state)
     with pytest.raises(ValueError, match="Unknown entity"):
         use_case.execute("ghost", Position(1, 1))
+
+# --- New tests for Move card requirement ---
+
+def test_move_without_move_card_raises():
+    state = make_state(with_move_card=False)
+    use_case, _, _ = make_use_case(state)
+    with pytest.raises(ValueError, match="No Move card"):
+        use_case.execute("player", Position(1, 2))
+
+def test_move_discards_move_card():
+    state = make_state()
+    move_card = state.hand[0]
+    use_case, _, _ = make_use_case(state)
+    use_case.execute("player", Position(1, 2))
+    assert move_card not in state.hand
+    assert move_card in state.discard
