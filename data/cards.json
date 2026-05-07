@@ -1,0 +1,84 @@
+{
+  "cards": [
+    {
+      "id": "step",
+      "name": "Step",
+      "tags": ["Move"],
+      "ap_cost": 1,
+      "pattern": "single",
+      "damage": 0,
+      "grants_ap": 0,
+      "draw_after_play": 0,
+      "status_effect": null,
+      "description": "Move to an adjacent tile."
+    },
+    {
+      "id": "slash",
+      "name": "Iron Slash",
+      "tags": ["Blade"],
+      "ap_cost": 2,
+      "pattern": "line",
+      "damage": 4,
+      "grants_ap": 0,
+      "draw_after_play": 0,
+      "status_effect": null,
+      "description": "Strike in a line of 3 tiles."
+    },
+    {
+      "id": "strike",
+      "name": "Quick Strike",
+      "tags": ["Blade"],
+      "ap_cost": 1,
+      "pattern": "single",
+      "damage": 2,
+      "grants_ap": 0,
+      "draw_after_play": 0,
+      "status_effect": null,
+      "description": "A fast strike on one tile."
+    },
+    {
+      "id": "spark",
+      "name": "Spark",
+      "tags": ["Electric"],
+      "ap_cost": 1,
+      "pattern": "cross",
+      "damage": 2,
+      "grants_ap": 0,
+      "draw_after_play": 0,
+      "status_effect": null,
+      "description": "Electric burst in a cross pattern."
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "tags": ["Fire"],
+      "ap_cost": 2,
+      "pattern": "cross",
+      "damage": 3,
+      "grants_ap": 0,
+      "draw_after_play": 0,
+      "status_effect": null,
+      "description": "Fiery explosion in a cross pattern."
+    },
+    {
+      "id": "charge",
+      "name": "Charge",
+      "tags": ["Blade"],
+      "ap_cost": 0,
+      "pattern": "single",
+      "damage": 1,
+      "grants_ap": 1,
+      "draw_after_play": 1,
+      "status_effect": null,
+      "description": "Quick attack, grants 1 AP, draw 1 card."
+    }
+  ],
+  "starting_deck": [
+    "step", "step", "step",
+    "slash", "slash",
+    "strike", "strike",
+    "spark",
+    "fireball",
+    "charge"
+  ]
+}

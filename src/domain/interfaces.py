@@ -4,6 +4,7 @@ from src.domain.events.base import DomainEvent
 
 if TYPE_CHECKING:
     from src.domain.battle_state import BattleState
+    from src.domain.entities.card import Card
 
 class IEventBus(Protocol):
     def publish(self, event: DomainEvent) -> None: ...
@@ -13,3 +14,6 @@ class IEventBus(Protocol):
 class IBattleRepository(Protocol):
     def get(self) -> BattleState: ...
     def save(self, state: BattleState) -> None: ...
+
+class ICardRepository(Protocol):
+    def get_starting_deck(self) -> list[Card]: ...
