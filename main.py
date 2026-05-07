@@ -2,7 +2,7 @@ import pygame
 from src.infrastructure.battle_repository import InMemoryBattleRepository
 from src.infrastructure.event_bus import PygameEventBus
 from src.infrastructure.card_repository import CardRepository
-from src.use_cases.start_battle import StartBattleUseCase, Encounter
+from src.use_cases.start_battle import StartBattleUseCase, Encounter, EnemyDef
 from src.domain.value_objects.position import Position
 from src.presentation.game_state_manager import GameStateManager
 from src.presentation.scenes.battle_scene import BattleScene
@@ -11,6 +11,7 @@ WINDOW_WIDTH = 560
 WINDOW_HEIGHT = 700
 FPS = 60
 WINDOW_TITLE = "Dungeon Card Roguelike"
+
 
 def main() -> None:
     pygame.init()
@@ -23,7 +24,12 @@ def main() -> None:
     card_repo = CardRepository()
 
     StartBattleUseCase(battle_repo, event_bus, card_repo).execute(
-        Encounter(player_start=Position(0, 0))
+        Encounter(
+            player_start=Position(0, 0),
+            enemies=[
+                EnemyDef(id="enemy_1", position=Position(3, 3), hp=20, base_damage=4),
+            ],
+        )
     )
 
     battle_scene = BattleScene(battle_repo, event_bus)
@@ -43,6 +49,7 @@ def main() -> None:
         pygame.display.flip()
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()

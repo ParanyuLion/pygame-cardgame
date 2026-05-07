@@ -5,6 +5,7 @@ from src.domain.entities.player import InsufficientAPError
 from src.use_cases.move_entity import MoveEntityUseCase
 from src.use_cases.play_card import PlayCardUseCase
 from src.use_cases.fuse_cards import FuseCardsUseCase
+from src.use_cases.end_turn import EndTurnUseCase
 from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.renderers.grid_renderer import GridRenderer
 
@@ -28,6 +29,7 @@ class InputHandler:
         move_use_case: MoveEntityUseCase,
         play_use_case: PlayCardUseCase,
         fuse_use_case: FuseCardsUseCase,
+        end_turn_use_case: EndTurnUseCase,
         battle_repo: IBattleRepository,
         hand_renderer: HandRenderer,
         grid_renderer: GridRenderer,
@@ -35,6 +37,7 @@ class InputHandler:
         self._move = move_use_case
         self._play = play_use_case
         self._fuse = fuse_use_case
+        self._end_turn = end_turn_use_case
         self._repo = battle_repo
         self._hand_renderer = hand_renderer
         self._grid_renderer = grid_renderer
@@ -54,6 +57,9 @@ class InputHandler:
             self._handle_mouse_up(event.pos)
 
     def _handle_key(self, event: pygame.event.Event) -> None:
+        if event.key == pygame.K_e:
+            self._end_turn.execute()
+            return
         if event.key not in _ARROW_TO_OFFSET:
             return
         state = self._repo.get()

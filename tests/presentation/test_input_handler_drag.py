@@ -34,9 +34,10 @@ def _make_handler(state: BattleState) -> tuple[InputHandler, MagicMock, HandRend
     move = MagicMock()
     play = MagicMock()
     fuse = MagicMock()
+    end_turn = MagicMock()
     hand_renderer = HandRenderer()
     grid_renderer = GridRenderer()
-    handler = InputHandler(move, play, fuse, repo, hand_renderer, grid_renderer)
+    handler = InputHandler(move, play, fuse, end_turn, repo, hand_renderer, grid_renderer)
     return handler, fuse, hand_renderer
 
 
