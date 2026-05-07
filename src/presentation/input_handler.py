@@ -106,7 +106,8 @@ class InputHandler:
                 except ValueError:
                     pass
         else:
-            self._handle_click(pos)
+            click_pos = self._drag_start if self._drag_start is not None else pos
+            self._handle_click(click_pos)
         self._drag_card_id = None
         self._drag_start = None
         self._drag_pos = None
