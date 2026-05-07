@@ -1,6 +1,6 @@
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.domain.entities.card import CardContext
-from src.domain.events.battle_events import CardPlayed, CardDrawn
+from src.domain.events.battle_events import CardPlayed, CardDrawn, BattleEnded
 from src.domain.services.deck_manager import DeckManager
 
 class PlayCardUseCase:
@@ -43,3 +43,5 @@ class PlayCardUseCase:
             self._bus.publish(event)
         for event in draw_events:
             self._bus.publish(event)
+        if state.enemies and all(not e.is_alive() for e in state.enemies):
+            self._bus.publish(BattleEnded(outcome="victory"))

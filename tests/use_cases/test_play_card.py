@@ -7,7 +7,9 @@ from src.domain.entities.card import Card, CardContext
 from src.domain.value_objects.position import Position
 from src.domain.value_objects.card_tag import CardTag
 from src.domain.value_objects.attack_pattern import AttackPattern
-from src.domain.events.battle_events import CardPlayed, CardDrawn
+from src.domain.events.battle_events import CardPlayed, CardDrawn, BattleEnded
+from src.domain.entities.enemy import Enemy
+from src.domain.value_objects.intent import Intent
 from src.use_cases.play_card import PlayCardUseCase
 
 def _card(id: str, ap_cost: int = 1, damage: int = 0, draw_after: int = 0) -> Card:
@@ -110,3 +112,44 @@ def test_play_draw_after_play_publishes_card_drawn():
     use_case.execute("charge_1")
     events = [call[0][0] for call in bus.publish.call_args_list]
     assert any(isinstance(e, CardDrawn) and e.card_id == "extra_1" for e in events)
+
+
+def _enemy(id: str = "e1", hp: int = 5) -> Enemy:
+    return Enemy(
+        id=id,
+        position=Position(1, 1),   # player is also at (1, 1); single pattern hits (1,1)
+        hp=hp,
+        max_hp=hp,
+        base_damage=2,
+        intent=Intent(type="ATTACK", pattern=AttackPattern.cross(), countdown=2, damage=2),
+    )
+
+
+def test_killing_last_enemy_publishes_battle_ended_victory():
+    card = _card("slash_1", ap_cost=1, damage=10)   # kills enemy with 5 HP
+    state = _make_state([card])
+    state.enemies = [_enemy("e1", hp=5)]
+    use_case, _, bus = _make_use_case(state)
+    use_case.execute("slash_1")
+    events = [call[0][0] for call in bus.publish.call_args_list]
+    assert any(isinstance(e, BattleEnded) and e.outcome == "victory" for e in events)
+
+
+def test_wounding_enemy_does_not_publish_battle_ended():
+    card = _card("slash_1", ap_cost=1, damage=2)    # leaves enemy with 8 HP
+    state = _make_state([card])
+    state.enemies = [_enemy("e1", hp=10)]
+    use_case, _, bus = _make_use_case(state)
+    use_case.execute("slash_1")
+    events = [call[0][0] for call in bus.publish.call_args_list]
+    assert not any(isinstance(e, BattleEnded) for e in events)
+
+
+def test_no_enemies_does_not_publish_battle_ended():
+    card = _card("slash_1", ap_cost=1)
+    state = _make_state([card])
+    # state.enemies is [] by default
+    use_case, _, bus = _make_use_case(state)
+    use_case.execute("slash_1")
+    events = [call[0][0] for call in bus.publish.call_args_list]
+    assert not any(isinstance(e, BattleEnded) for e in events)
