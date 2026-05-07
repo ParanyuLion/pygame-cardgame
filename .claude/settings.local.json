@@ -39,7 +39,10 @@
       "Bash(cd /d E:\\\\Coding\\\\pygame)",
       "Bash(python -m pytest -v)",
       "Bash(pytest tests/domain/services/test_fusion_engine.py -v)",
-      "Bash(python -m pytest tests/domain/services/test_fusion_engine.py -v)"
+      "Bash(python -m pytest tests/domain/services/test_fusion_engine.py -v)",
+      "Bash(pytest tests/domain/services/test_fusion_engine.py -q)",
+      "Bash(python -m pytest tests/domain/services/test_fusion_engine.py -q)",
+      "Bash(python -m pytest tests/use_cases/test_fuse_cards.py -v)"
     ]
   }
 }
