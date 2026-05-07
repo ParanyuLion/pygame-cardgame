@@ -1,6 +1,6 @@
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.domain.entities.card import CardContext
-from src.domain.events.battle_events import CardPlayed
+from src.domain.events.battle_events import CardPlayed, CardDrawn
 from src.domain.services.deck_manager import DeckManager
 
 class PlayCardUseCase:
@@ -16,6 +16,8 @@ class PlayCardUseCase:
             raise ValueError(f"Card '{card_id}' not in hand")
 
         state.player.spend_ap(card.ap_cost)
+        if card.grants_ap:
+            state.player.ap = min(state.player.ap + card.grants_ap, state.player.max_ap)
 
         targets = state.grid.get_targets(state.player.position, card.pattern)
         context = CardContext(player=state.player, targets=targets, enemies=state.enemies)
@@ -24,8 +26,11 @@ class PlayCardUseCase:
         state.hand.remove(card)
         state.discard.append(card)
 
+        draw_events: list[CardDrawn] = []
         for _ in range(card.draw_after_play):
-            DeckManager.draw(state.deck, state.hand, state.discard)
+            drawn = DeckManager.draw(state.deck, state.hand, state.discard)
+            if drawn is not None:
+                draw_events.append(drawn)
 
         self._repo.save(state)
 
@@ -35,4 +40,6 @@ class PlayCardUseCase:
             targets=tuple(targets),
         ))
         for event in side_events:
+            self._bus.publish(event)
+        for event in draw_events:
             self._bus.publish(event)

@@ -7,7 +7,7 @@ from src.domain.entities.card import Card, CardContext
 from src.domain.value_objects.position import Position
 from src.domain.value_objects.card_tag import CardTag
 from src.domain.value_objects.attack_pattern import AttackPattern
-from src.domain.events.battle_events import CardPlayed
+from src.domain.events.battle_events import CardPlayed, CardDrawn
 from src.use_cases.play_card import PlayCardUseCase
 
 def _card(id: str, ap_cost: int = 1, damage: int = 0, draw_after: int = 0) -> Card:
@@ -92,3 +92,21 @@ def test_play_card_zero_ap_cost_allowed():
     use_case, _, _ = _make_use_case(state)
     use_case.execute("charge_1")   # must not raise
     assert card in state.discard
+
+def test_play_charge_grants_ap():
+    card = Card(id="charge_1", name="charge_1", tags=[CardTag("Charge")], ap_cost=0,
+                pattern=AttackPattern.single(), damage=0, grants_ap=1)
+    state = _make_state([card], ap=2)
+    use_case, _, _ = _make_use_case(state)
+    use_case.execute("charge_1")
+    assert state.player.ap == 3  # 2 - 0 + 1 = 3
+
+def test_play_draw_after_play_publishes_card_drawn():
+    card = _card("charge_1", ap_cost=0, draw_after=1)
+    extra = _extra_deck_card("extra_1")
+    state = _make_state([card])
+    state.deck = [extra]
+    use_case, _, bus = _make_use_case(state)
+    use_case.execute("charge_1")
+    events = [call[0][0] for call in bus.publish.call_args_list]
+    assert any(isinstance(e, CardDrawn) and e.card_id == "extra_1" for e in events)

@@ -68,10 +68,6 @@ class InputHandler:
         if self._selected_card_id is None:
             return
 
-        tile_pos = self._grid_renderer.screen_to_tile(*pos)
-        if tile_pos is None:
-            return
-
         try:
             self._play.execute(self._selected_card_id)
             self._selected_card_id = None
