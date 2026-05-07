@@ -2,8 +2,10 @@ from __future__ import annotations
 import pygame
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.use_cases.move_entity import MoveEntityUseCase
+from src.use_cases.play_card import PlayCardUseCase
 from src.presentation.renderers.grid_renderer import GridRenderer
 from src.presentation.renderers.entity_renderer import EntityRenderer
+from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.input_handler import InputHandler
 
 COLOR_BG = (10, 8, 6)
@@ -16,9 +18,17 @@ class BattleScene:
     ) -> None:
         self._repo = battle_repo
         move_use_case = MoveEntityUseCase(battle_repo, event_bus)
+        play_use_case = PlayCardUseCase(battle_repo, event_bus)
         self._grid_renderer = GridRenderer()
         self._entity_renderer = EntityRenderer(self._grid_renderer)
-        self._input_handler = InputHandler(move_use_case, battle_repo)
+        self._hand_renderer = HandRenderer()
+        self._input_handler = InputHandler(
+            move_use_case,
+            play_use_case,
+            battle_repo,
+            self._hand_renderer,
+            self._grid_renderer,
+        )
 
     def on_enter(self) -> None:
         pass
@@ -37,3 +47,4 @@ class BattleScene:
         state = self._repo.get()
         self._grid_renderer.render(surface, state.grid)
         self._entity_renderer.render(surface, state.player)
+        self._hand_renderer.render(surface, state.hand)
