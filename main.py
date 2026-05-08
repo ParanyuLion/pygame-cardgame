@@ -1,4 +1,6 @@
 from __future__ import annotations
+import sys
+import ctypes
 import pygame
 from src.infrastructure.battle_repository import InMemoryBattleRepository
 from src.infrastructure.run_repository import InMemoryRunRepository
@@ -14,10 +16,23 @@ FPS = 60
 WINDOW_TITLE = "Dungeon Card Roguelike"
 
 
+def _maximize_window() -> None:
+    if sys.platform == "win32":
+        try:
+            hwnd = pygame.display.get_wm_info()["window"]
+            ctypes.windll.user32.ShowWindow(hwnd, 3)  # SW_MAXIMIZE
+        except Exception:
+            pass
+
+
 def main() -> None:
     pygame.init()
-    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen = pygame.display.set_mode(
+        (WINDOW_WIDTH, WINDOW_HEIGHT),
+        pygame.RESIZABLE | pygame.SCALED,
+    )
     pygame.display.set_caption(WINDOW_TITLE)
+    _maximize_window()
     clock = pygame.time.Clock()
 
     event_bus = PygameEventBus()
@@ -39,6 +54,8 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
+                pygame.display.toggle_fullscreen()
             else:
                 gsm.handle_event(event)
         gsm.update(dt)
