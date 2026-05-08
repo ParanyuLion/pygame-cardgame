@@ -10,6 +10,7 @@ from src.presentation.renderers.entity_renderer import EntityRenderer
 from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.renderers.enemy_renderer import EnemyRenderer
 from src.presentation.renderers.intent_renderer import IntentRenderer
+from src.presentation.renderers.hud_renderer import HudRenderer
 from src.presentation.input_handler import InputHandler
 
 COLOR_BG = (10, 8, 6)
@@ -31,6 +32,7 @@ class BattleScene:
         self._hand_renderer = HandRenderer()
         self._enemy_renderer = EnemyRenderer(self._grid_renderer)
         self._intent_renderer = IntentRenderer(self._grid_renderer)
+        self._hud_renderer = HudRenderer()
         self._input_handler = InputHandler(
             move_use_case,
             play_use_case,
@@ -61,3 +63,4 @@ class BattleScene:
         self._entity_renderer.render(surface, state.player)
         self._enemy_renderer.render(surface, state.enemies)
         self._hand_renderer.render(surface, state.hand)
+        self._hud_renderer.render(surface, state.player)
