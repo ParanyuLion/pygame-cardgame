@@ -28,6 +28,14 @@ _DEFAULT_BORDER = (120, 110, 90)
 _ICON_CACHE: dict[str, pygame.Surface | None] = {}
 _ICONS_DIR = os.path.join("assets", "sprites", "cards")
 
+# Representative icon for each tag (used for fused cards)
+_TAG_ICON: dict[str, str] = {
+    "Move":     "step",
+    "Blade":    "slash",
+    "Fire":     "fireball",
+    "Electric": "spark",
+}
+
 
 def _def_id(card_id: str) -> str:
     cid = re.sub(r"^reward_", "", card_id)
@@ -35,7 +43,7 @@ def _def_id(card_id: str) -> str:
     return cid
 
 
-def _load_icon(def_id: str) -> pygame.Surface | None:
+def _load_single_icon(def_id: str) -> pygame.Surface | None:
     if def_id in _ICON_CACHE:
         return _ICON_CACHE[def_id]
     path = os.path.join(_ICONS_DIR, f"{def_id}.png")
@@ -53,6 +61,40 @@ def _load_icon(def_id: str) -> pygame.Surface | None:
     surf = pygame.transform.smoothscale(raw, (_ICON_SIZE, _ICON_SIZE))
     _ICON_CACHE[def_id] = surf
     return surf
+
+
+def _load_icon_for_card(card: Card) -> pygame.Surface | None:
+    if not card.id.startswith("fused_"):
+        return _load_single_icon(_def_id(card.id))
+
+    # Fused card: composite the icons of each unique tag side-by-side
+    cache_key = "fused:" + ",".join(t.value for t in card.tags)
+    if cache_key in _ICON_CACHE:
+        return _ICON_CACHE[cache_key]
+
+    icons = [
+        _load_single_icon(_TAG_ICON[t.value])
+        for t in card.tags
+        if t.value in _TAG_ICON
+    ]
+    icons = [ic for ic in icons if ic is not None]
+
+    if not icons:
+        _ICON_CACHE[cache_key] = None
+        return None
+
+    if len(icons) == 1:
+        result = icons[0]
+    else:
+        # Split side-by-side: each icon compressed to equal share of width
+        result = pygame.Surface((_ICON_SIZE, _ICON_SIZE), pygame.SRCALPHA)
+        slot_w = _ICON_SIZE // len(icons)
+        for idx, ic in enumerate(icons):
+            slot = pygame.transform.smoothscale(ic, (slot_w, _ICON_SIZE))
+            result.blit(slot, (idx * slot_w, 0))
+
+    _ICON_CACHE[cache_key] = result
+    return result
 
 
 class HandRenderer:
@@ -121,7 +163,7 @@ class HandRenderer:
         surface.blit(name_surf, (rect.x + 4, rect.y + 4))
 
         # Icon centred in the card body
-        icon = _load_icon(_def_id(card.id))
+        icon = _load_icon_for_card(card)
         if icon is not None:
             ix = rect.x + (CARD_W - _ICON_SIZE) // 2
             iy = rect.y + _ICON_Y_OFFSET
