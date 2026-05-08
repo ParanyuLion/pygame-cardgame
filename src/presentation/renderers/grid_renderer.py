@@ -44,6 +44,22 @@ class GridRenderer:
         inner = rect.inflate(-10, -10)
         pygame.draw.rect(surface, color, inner, border_radius=3)
 
+    def render_highlights(
+        self,
+        surface: pygame.Surface,
+        positions: list[Position],
+        is_move: bool,
+    ) -> None:
+        if not positions:
+            return
+        color = (80, 140, 255) if is_move else (255, 140, 40)
+        overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+        overlay.fill((*color, 55))
+        for pos in positions:
+            x, y = self.tile_to_screen(pos)
+            surface.blit(overlay, (x, y))
+            pygame.draw.rect(surface, color, pygame.Rect(x, y, TILE_SIZE, TILE_SIZE), width=2, border_radius=4)
+
     def tile_to_screen(self, pos: Position) -> tuple[int, int]:
         x = GRID_OFFSET_X + pos.col * (TILE_SIZE + TILE_GAP)
         y = GRID_OFFSET_Y + pos.row * (TILE_SIZE + TILE_GAP)

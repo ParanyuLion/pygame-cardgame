@@ -59,8 +59,24 @@ class BattleScene:
     def render(self, surface: pygame.Surface) -> None:
         state = self._repo.get()
         self._grid_renderer.render(surface, state.grid)
+        self._render_range_highlights(surface, state)
         self._intent_renderer.render(surface, state.enemies, state.grid)
         self._entity_renderer.render(surface, state.player)
         self._enemy_renderer.render(surface, state.enemies)
         self._hand_renderer.render(surface, state.hand)
         self._hud_renderer.render(surface, state.player)
+
+    def _render_range_highlights(self, surface, state) -> None:
+        selected_id = self._input_handler.selected_card_id
+        if selected_id is None:
+            return
+        card = next((c for c in state.hand if c.id == selected_id), None)
+        if card is None:
+            return
+        p = state.player.position
+        highlights = [
+            pos for pos in state.grid.tiles
+            if abs(pos.col - p.col) + abs(pos.row - p.row) == 1
+            and (not card.is_move_card() or state.grid.is_passable(pos))
+        ]
+        self._grid_renderer.render_highlights(surface, highlights, card.is_move_card())

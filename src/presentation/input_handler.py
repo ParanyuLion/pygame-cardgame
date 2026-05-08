@@ -8,6 +8,7 @@ from src.use_cases.fuse_cards import FuseCardsUseCase
 from src.use_cases.end_turn import EndTurnUseCase
 from src.presentation.renderers.hand_renderer import HandRenderer
 from src.presentation.renderers.grid_renderer import GridRenderer
+from src.presentation.renderers.hud_renderer import END_TURN_RECT
 
 _ARROW_TO_OFFSET: dict[int, tuple[int, int]] = {
     pygame.K_UP:    (0, -1),
@@ -45,6 +46,10 @@ class InputHandler:
         self._drag_card_id: str | None = None
         self._drag_start: tuple[int, int] | None = None
         self._dragging: bool = False
+
+    @property
+    def selected_card_id(self) -> str | None:
+        return self._selected_card_id
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN:
@@ -118,6 +123,9 @@ class InputHandler:
         self._dragging = False
 
     def _handle_click(self, pos: tuple[int, int]) -> None:
+        if END_TURN_RECT.collidepoint(pos):
+            self._end_turn.execute()
+            return
         state = self._repo.get()
         clicked_card = self._hand_renderer.card_at_point(pos, state.hand)
         if clicked_card is not None:

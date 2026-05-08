@@ -19,6 +19,12 @@ _PIP_GAP = 6
 _RIGHT_MARGIN = 80
 _WINDOW_W = 560
 
+END_TURN_RECT = pygame.Rect(415, 628, 120, 42)
+_COLOR_BTN_NORMAL = (55, 40, 22)
+_COLOR_BTN_HOVER = (80, 60, 32)
+_COLOR_BTN_BORDER = (140, 110, 60)
+_COLOR_BTN_BORDER_HOVER = (200, 160, 80)
+
 
 class HudRenderer:
     def __init__(self) -> None:
@@ -30,6 +36,18 @@ class HudRenderer:
 
         self._render_hp(surface, player)
         self._render_ap(surface, player)
+        self._render_end_turn_button(surface)
+
+    def _render_end_turn_button(self, surface: pygame.Surface) -> None:
+        hovered = END_TURN_RECT.collidepoint(pygame.mouse.get_pos())
+        bg = _COLOR_BTN_HOVER if hovered else _COLOR_BTN_NORMAL
+        border = _COLOR_BTN_BORDER_HOVER if hovered else _COLOR_BTN_BORDER
+        pygame.draw.rect(surface, bg, END_TURN_RECT, border_radius=5)
+        pygame.draw.rect(surface, border, END_TURN_RECT, width=2, border_radius=5)
+        label = self._font.render("End Turn (E)", True, _COLOR_TEXT)
+        lx = END_TURN_RECT.centerx - label.get_width() // 2
+        ly = END_TURN_RECT.centery - label.get_height() // 2
+        surface.blit(label, (lx, ly))
 
     def _render_hp(self, surface: pygame.Surface, player: Player) -> None:
         label = self._font.render("HP", True, _COLOR_TEXT)
