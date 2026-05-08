@@ -30,7 +30,6 @@ class GameController:
         self._battle_repo = battle_repo
         self._event_bus = event_bus
         self._card_repo = card_repo
-        event_bus.subscribe(BattleEnded, self._on_battle_ended)
 
     def start_new_run(self) -> None:
         StartRunUseCase(self._run_repo, self._card_repo).execute()
@@ -49,10 +48,12 @@ class GameController:
             player_hp=run.player_hp,
             deck=list(run.deck),
         )
+        self._event_bus.subscribe(BattleEnded, self._on_battle_ended)
         StartBattleUseCase(self._battle_repo, self._event_bus, self._card_repo).execute(encounter)
         self._gsm.transition_to(BattleScene(self._battle_repo, self._event_bus))
 
     def _on_battle_ended(self, event: BattleEnded) -> None:
+        self._event_bus.unsubscribe(BattleEnded, self._on_battle_ended)
         if event.outcome == "victory":
             self._handle_victory()
         else:

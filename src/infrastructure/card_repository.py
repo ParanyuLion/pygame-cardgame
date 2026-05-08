@@ -14,6 +14,7 @@ class CardRepository:
         raw = json.loads(path.read_text())
         self._definitions: dict[str, dict] = {c["id"]: c for c in raw["cards"]}
         self._starting_deck_ids: list[str] = raw["starting_deck"]
+        self._reward_counter: int = 0
 
     def get_starting_deck(self) -> list[Card]:
         counts: dict[str, int] = {}
@@ -40,10 +41,11 @@ class CardRepository:
         pool = list(self._definitions.keys())
         chosen = random.sample(pool, min(n, len(pool)))
         result: list[Card] = []
-        for i, def_id in enumerate(chosen):
+        for def_id in chosen:
+            self._reward_counter += 1
             defn = self._definitions[def_id]
             result.append(Card(
-                id=f"reward_{def_id}_{i}",
+                id=f"reward_{def_id}_{self._reward_counter}",
                 name=defn["name"],
                 tags=[CardTag(t) for t in defn["tags"]],
                 ap_cost=defn["ap_cost"],

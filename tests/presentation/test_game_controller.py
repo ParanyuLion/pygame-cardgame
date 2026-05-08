@@ -20,6 +20,8 @@ def _make_controller():
     event_bus.subscribe.side_effect = subscribe
 
     ctrl = GameController(gsm, run_repo, battle_repo, event_bus, card_repo)
+    # Register handler directly — in production this happens via _start_current_node_battle
+    subscribers[BattleEnded] = ctrl._on_battle_ended
     return ctrl, gsm, run_repo, battle_repo, card_repo, subscribers
 
 
