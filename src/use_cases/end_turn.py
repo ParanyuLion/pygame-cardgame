@@ -2,12 +2,26 @@ from __future__ import annotations
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.domain.events.base import DomainEvent
 from src.domain.events.battle_events import (
-    BattleTurnStarted, IntentBroadcast, BattleEnded, CardDrawn,
+    BattleTurnStarted, IntentBroadcast, BattleEnded, CardDrawn, EntityMoved,
 )
 from src.domain.services.deck_manager import DeckManager
 from src.domain.value_objects.grid_snapshot import GridSnapshot
+from src.domain.value_objects.position import Position
 
 HAND_SIZE = 5
+
+
+def _step_toward(pos: Position, target: Position, grid) -> Position | None:
+    """Return the adjacent tile that minimises Manhattan distance to target, or None if blocked."""
+    best: tuple[int, Position] | None = None
+    for dcol, drow in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        neighbor = pos.offset(dcol, drow)
+        if neighbor is None or not grid.is_passable(neighbor):
+            continue
+        dist = abs(neighbor.col - target.col) + abs(neighbor.row - target.row)
+        if best is None or dist < best[0]:
+            best = (dist, neighbor)
+    return best[1] if best is not None else None
 
 
 class EndTurnUseCase:
@@ -40,10 +54,19 @@ class EndTurnUseCase:
             enemy.intent = new_intent
 
             if new_intent.countdown <= 0:
-                targets = state.grid.get_targets(enemy.position, new_intent.pattern)
-                if state.player.position in targets:
-                    damage_event = enemy.resolve_attack(state.player)
-                    events.append(damage_event)
+                if new_intent.type == "MOVE":
+                    new_pos = _step_toward(enemy.position, state.player.position, state.grid)
+                    if new_pos is not None:
+                        state.grid.remove(enemy.id)
+                        old_pos = enemy.position
+                        enemy.position = new_pos
+                        state.grid.place(enemy.id, new_pos)
+                        events.append(EntityMoved(entity_id=enemy.id, from_pos=old_pos, to_pos=new_pos))
+                else:
+                    targets = state.grid.get_targets(enemy.position, new_intent.pattern)
+                    if state.player.position in targets:
+                        damage_event = enemy.resolve_attack(state.player)
+                        events.append(damage_event)
                 enemy.intent = enemy.choose_intent(snapshot)
 
             events.append(IntentBroadcast(

@@ -49,14 +49,23 @@ def test_enemy_is_alive_false_when_hp_zero():
     assert not _enemy(hp=0).is_alive()
 
 
-def test_enemy_choose_intent_returns_attack_with_countdown_two():
-    e = _enemy()
-    snapshot = GridSnapshot(positions={"e1": Position(3, 3)}, hp={"e1": 20})
+def test_enemy_choose_intent_returns_attack_when_adjacent_to_player():
+    e = _enemy()  # position (3,3)
+    snapshot = GridSnapshot(positions={"e1": Position(3, 3), "player": Position(3, 2)}, hp={"e1": 20, "player": 30})
     intent = e.choose_intent(snapshot)
     assert intent.type == "ATTACK"
     assert intent.countdown == 2
     assert intent.damage == e.base_damage
     assert intent.pattern == AttackPattern.cross()
+
+
+def test_enemy_choose_intent_returns_move_when_far_from_player():
+    e = _enemy()  # position (3,3)
+    snapshot = GridSnapshot(positions={"e1": Position(3, 3), "player": Position(0, 0)}, hp={"e1": 20, "player": 30})
+    intent = e.choose_intent(snapshot)
+    assert intent.type == "MOVE"
+    assert intent.countdown == 1
+    assert intent.damage == 0
 
 
 def test_enemy_tick_intent_decrements_countdown_without_mutating_original():

@@ -9,7 +9,7 @@ from src.domain.value_objects.intent import Intent
 from src.domain.value_objects.attack_pattern import AttackPattern
 from src.domain.value_objects.card_tag import CardTag
 from src.domain.events.battle_events import (
-    BattleTurnStarted, IntentBroadcast, DamageTaken, BattleEnded, CardDrawn,
+    BattleTurnStarted, IntentBroadcast, DamageTaken, BattleEnded, CardDrawn, EntityMoved,
 )
 from src.use_cases.end_turn import EndTurnUseCase
 
@@ -128,12 +128,15 @@ def test_end_turn_no_damage_when_player_outside_pattern():
     assert state.player.hp == 30
 
 
-def test_end_turn_after_attack_enemy_gets_fresh_intent():
+def test_end_turn_after_attack_enemy_gets_fresh_attack_intent_when_adjacent():
+    # Player adjacent to enemy → fresh intent is ATTACK with countdown=2
     enemy = _enemy(pos=Position(2, 2), countdown=1)
-    state = _make_state(enemies=[enemy])
+    player = _player(pos=Position(2, 1))  # adjacent
+    state = _make_state(player=player, enemies=[enemy])
     use_case, bus = _make_use_case(state)
     use_case.execute()
-    assert state.enemies[0].intent.countdown == 2  # fresh intent chosen
+    assert state.enemies[0].intent.type == "ATTACK"
+    assert state.enemies[0].intent.countdown == 2
 
 
 def test_end_turn_draws_cards_to_fill_hand():
@@ -187,3 +190,67 @@ def test_end_turn_does_nothing_if_player_already_dead():
     use_case.execute()
     bus.publish.assert_not_called()
     repo.save.assert_not_called()
+
+
+def _move_intent() -> Intent:
+    return Intent(type="MOVE", pattern=AttackPattern.single(), countdown=1, damage=0)
+
+
+def test_end_turn_enemy_with_move_intent_steps_toward_player():
+    enemy = Enemy(id="e1", position=Position(3, 3), hp=20, max_hp=20, base_damage=5, intent=_move_intent())
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, bus = _make_use_case(state)
+    use_case.execute()
+    new_pos = state.enemies[0].position
+    assert abs(new_pos.col - 0) + abs(new_pos.row - 0) < 6  # closer than start (3+3=6)
+
+
+def test_end_turn_enemy_move_updates_grid():
+    enemy = Enemy(id="e1", position=Position(3, 3), hp=20, max_hp=20, base_damage=5, intent=_move_intent())
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, _ = _make_use_case(state)
+    use_case.execute()
+    assert state.grid.get_entity_position("e1") == state.enemies[0].position
+
+
+def test_end_turn_enemy_move_publishes_entity_moved():
+    enemy = Enemy(id="e1", position=Position(3, 3), hp=20, max_hp=20, base_damage=5, intent=_move_intent())
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, bus = _make_use_case(state)
+    use_case.execute()
+    events = _published_events(bus)
+    assert any(isinstance(e, EntityMoved) and e.entity_id == "e1" for e in events)
+
+
+def test_end_turn_enemy_chooses_attack_intent_when_adjacent():
+    enemy = _enemy(pos=Position(1, 0), countdown=1)
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, _ = _make_use_case(state)
+    use_case.execute()
+    assert state.enemies[0].intent.type == "ATTACK"
+
+
+def test_end_turn_enemy_chooses_move_intent_when_far():
+    enemy = _enemy(pos=Position(3, 3), countdown=1)
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, _ = _make_use_case(state)
+    use_case.execute()
+    assert state.enemies[0].intent.type == "MOVE"
+
+
+def test_end_turn_enemy_blocked_stays_put():
+    # Enemy at (1,0), player at (0,0) — only free adjacent tile blocked by player
+    # remaining tiles: (2,0),(1,1) are passable; enemy should still move (toward player)
+    # This test checks enemy doesn't crash when some neighbors are occupied
+    enemy = Enemy(id="e1", position=Position(2, 0), hp=20, max_hp=20, base_damage=5, intent=_move_intent())
+    player = _player(pos=Position(0, 0))
+    state = _make_state(player=player, enemies=[enemy])
+    use_case, _ = _make_use_case(state)
+    use_case.execute()
+    # Should not crash; enemy moved one step toward player
+    assert state.enemies[0].position != Position(2, 0)

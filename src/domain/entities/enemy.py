@@ -25,13 +25,14 @@ class Enemy:
         return self.hp > 0
 
     def choose_intent(self, snapshot: GridSnapshot) -> Intent:
-        # snapshot reserved for future multi-enemy AI; caller assigns enemy.intent = enemy.choose_intent(snapshot)
-        return Intent(
-            type="ATTACK",
-            pattern=AttackPattern.cross(),
-            countdown=2,
-            damage=self.base_damage,
+        player_pos = snapshot.positions.get("player")
+        adjacent = (
+            player_pos is not None
+            and abs(self.position.col - player_pos.col) + abs(self.position.row - player_pos.row) <= 1
         )
+        if adjacent:
+            return Intent(type="ATTACK", pattern=AttackPattern.cross(), countdown=2, damage=self.base_damage)
+        return Intent(type="MOVE", pattern=AttackPattern.single(), countdown=1, damage=0)
 
     def tick_intent(self) -> Intent:
         # Pure: returns new Intent; caller assigns enemy.intent = enemy.tick_intent()
