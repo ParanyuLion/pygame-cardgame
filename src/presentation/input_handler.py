@@ -51,6 +51,11 @@ class InputHandler:
     def selected_card_id(self) -> str | None:
         return self._selected_card_id
 
+    @property
+    def active_card_id(self) -> str | None:
+        """Card currently selected OR being dragged — used for range highlights."""
+        return self._drag_card_id if self._dragging else self._selected_card_id
+
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN:
             self._handle_key(event)
@@ -109,12 +114,23 @@ class InputHandler:
             state = self._repo.get()
             target_card = self._hand_renderer.card_at_point(pos, state.hand)
             if target_card is not None and target_card.id != self._drag_card_id:
+                # Drop onto another card → fuse
                 try:
                     self._fuse.execute(self._drag_card_id, target_card.id)
                     self._selected_card_id = None
                     self._hand_renderer.set_selected(None)
                 except ValueError:
                     pass
+            else:
+                # Drop onto a grid tile → play card
+                target_pos = self._grid_renderer.screen_to_tile(pos[0], pos[1])
+                if target_pos is not None:
+                    try:
+                        self._play.execute(self._drag_card_id, target_pos)
+                        self._selected_card_id = None
+                        self._hand_renderer.set_selected(None)
+                    except (InsufficientAPError, ValueError):
+                        pass
         else:
             click_pos = self._drag_start if self._drag_start is not None else pos
             self._handle_click(click_pos)

@@ -67,7 +67,7 @@ class BattleScene:
         self._hud_renderer.render(surface, state.player)
 
     def _render_range_highlights(self, surface, state) -> None:
-        selected_id = self._input_handler.selected_card_id
+        selected_id = self._input_handler.active_card_id
         if selected_id is None:
             return
         card = next((c for c in state.hand if c.id == selected_id), None)
