@@ -136,7 +136,7 @@ def test_end_turn_after_attack_enemy_gets_fresh_attack_intent_when_adjacent():
     use_case, bus = _make_use_case(state)
     use_case.execute()
     assert state.enemies[0].intent.type == "ATTACK"
-    assert state.enemies[0].intent.countdown == 2
+    assert state.enemies[0].intent.countdown == 1
 
 
 def test_end_turn_draws_cards_to_fill_hand():

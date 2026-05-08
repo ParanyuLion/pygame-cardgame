@@ -54,7 +54,7 @@ def test_enemy_choose_intent_returns_attack_when_adjacent_to_player():
     snapshot = GridSnapshot(positions={"e1": Position(3, 3), "player": Position(3, 2)}, hp={"e1": 20, "player": 30})
     intent = e.choose_intent(snapshot)
     assert intent.type == "ATTACK"
-    assert intent.countdown == 2
+    assert intent.countdown == 1
     assert intent.damage == e.base_damage
     assert intent.pattern == AttackPattern.cross()
 

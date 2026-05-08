@@ -104,16 +104,29 @@ def test_start_battle_places_enemy_on_grid():
     assert state.grid.is_occupied(Position(3, 3))
 
 
-def test_start_battle_enemy_initial_intent_is_attack_countdown_two():
+def test_start_battle_enemy_far_from_player_starts_with_move_intent():
     use_case, repo = _make_use_case_mock()
+    # Enemy at (3,3), player at (0,0) — far apart, initial intent should be MOVE
     use_case.execute(Encounter(
         player_start=Position(0, 0),
         enemies=[EnemyDef(id="e1", position=Position(3, 3), hp=20, base_damage=5)],
     ))
     state = repo.save.call_args[0][0]
     intent = state.enemies[0].intent
+    assert intent.type == "MOVE"
+
+
+def test_start_battle_enemy_adjacent_to_player_starts_with_attack_intent():
+    use_case, repo = _make_use_case_mock()
+    # Enemy at (0,1), player at (0,0) — adjacent, initial intent should be ATTACK
+    use_case.execute(Encounter(
+        player_start=Position(0, 0),
+        enemies=[EnemyDef(id="e1", position=Position(0, 1), hp=20, base_damage=5)],
+    ))
+    state = repo.save.call_args[0][0]
+    intent = state.enemies[0].intent
     assert intent.type == "ATTACK"
-    assert intent.countdown == 2
+    assert intent.countdown == 1
     assert intent.damage == 5
 
 

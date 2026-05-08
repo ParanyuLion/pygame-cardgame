@@ -10,6 +10,7 @@ from src.domain.entities.enemy import Enemy
 from src.domain.entities.grid import Grid
 from src.domain.value_objects.intent import Intent
 from src.domain.value_objects.attack_pattern import AttackPattern
+from src.domain.value_objects.grid_snapshot import GridSnapshot
 from src.domain.value_objects.position import Position
 from src.domain.events.battle_events import BattleTurnStarted
 from src.domain.services.deck_manager import DeckManager
@@ -60,22 +61,23 @@ class StartBattleUseCase:
 
         enemies: list[Enemy] = []
         for enemy_def in encounter.enemies:
-            initial_intent = Intent(
-                type="ATTACK",
-                pattern=AttackPattern.cross(),
-                countdown=2,
-                damage=enemy_def.base_damage,
-            )
             enemy = Enemy(
                 id=enemy_def.id,
                 position=enemy_def.position,
                 hp=enemy_def.hp,
                 max_hp=enemy_def.hp,
                 base_damage=enemy_def.base_damage,
-                intent=initial_intent,
+                intent=Intent(type="MOVE", pattern=AttackPattern.single(), countdown=1, damage=0),
             )
             grid.place(enemy.id, enemy.position)
             enemies.append(enemy)
+
+        snapshot = GridSnapshot(
+            positions={e.id: e.position for e in enemies} | {"player": encounter.player_start},
+            hp={e.id: e.hp for e in enemies} | {"player": player.hp},
+        )
+        for enemy in enemies:
+            enemy.intent = enemy.choose_intent(snapshot)
 
         deck = list(encounter.deck) if encounter.deck is not None else self._card_repo.get_starting_deck()
         random.shuffle(deck)

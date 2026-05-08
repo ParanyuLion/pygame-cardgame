@@ -31,7 +31,7 @@ class Enemy:
             and abs(self.position.col - player_pos.col) + abs(self.position.row - player_pos.row) <= 1
         )
         if adjacent:
-            return Intent(type="ATTACK", pattern=AttackPattern.cross(), countdown=2, damage=self.base_damage)
+            return Intent(type="ATTACK", pattern=AttackPattern.cross(), countdown=1, damage=self.base_damage)
         return Intent(type="MOVE", pattern=AttackPattern.single(), countdown=1, damage=0)
 
     def tick_intent(self) -> Intent:
