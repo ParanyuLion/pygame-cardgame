@@ -114,10 +114,13 @@ def test_play_draw_after_play_publishes_card_drawn():
     assert any(isinstance(e, CardDrawn) and e.card_id == "extra_1" for e in events)
 
 
+_ENEMY_POS = Position(2, 1)  # adjacent to player at (1,1)
+
+
 def _enemy(id: str = "e1", hp: int = 5) -> Enemy:
     return Enemy(
         id=id,
-        position=Position(1, 1),   # player is also at (1, 1); single pattern hits (1,1)
+        position=_ENEMY_POS,
         hp=hp,
         max_hp=hp,
         base_damage=2,
@@ -126,21 +129,21 @@ def _enemy(id: str = "e1", hp: int = 5) -> Enemy:
 
 
 def test_killing_last_enemy_publishes_battle_ended_victory():
-    card = _card("slash_1", ap_cost=1, damage=10)   # kills enemy with 5 HP
+    card = _card("slash_1", ap_cost=1, damage=10)
     state = _make_state([card])
     state.enemies = [_enemy("e1", hp=5)]
     use_case, _, bus = _make_use_case(state)
-    use_case.execute("slash_1")
+    use_case.execute("slash_1", _ENEMY_POS)
     events = [call[0][0] for call in bus.publish.call_args_list]
     assert any(isinstance(e, BattleEnded) and e.outcome == "victory" for e in events)
 
 
 def test_wounding_enemy_does_not_publish_battle_ended():
-    card = _card("slash_1", ap_cost=1, damage=2)    # leaves enemy with 8 HP
+    card = _card("slash_1", ap_cost=1, damage=2)
     state = _make_state([card])
     state.enemies = [_enemy("e1", hp=10)]
     use_case, _, bus = _make_use_case(state)
-    use_case.execute("slash_1")
+    use_case.execute("slash_1", _ENEMY_POS)
     events = [call[0][0] for call in bus.publish.call_args_list]
     assert not any(isinstance(e, BattleEnded) for e in events)
 
@@ -148,8 +151,18 @@ def test_wounding_enemy_does_not_publish_battle_ended():
 def test_no_enemies_does_not_publish_battle_ended():
     card = _card("slash_1", ap_cost=1)
     state = _make_state([card])
-    # state.enemies is [] by default
     use_case, _, bus = _make_use_case(state)
-    use_case.execute("slash_1")
+    use_case.execute("slash_1", Position(1, 1))
+    events = [call[0][0] for call in bus.publish.call_args_list]
+    assert not any(isinstance(e, BattleEnded) for e in events)
+
+
+def test_targeting_wrong_tile_misses_enemy():
+    card = _card("slash_1", ap_cost=1, damage=10)
+    state = _make_state([card])
+    state.enemies = [_enemy("e1", hp=5)]
+    use_case, _, bus = _make_use_case(state)
+    use_case.execute("slash_1", Position(0, 0))  # aimed at wrong tile — enemy survives
+    assert state.enemies[0].is_alive()
     events = [call[0][0] for call in bus.publish.call_args_list]
     assert not any(isinstance(e, BattleEnded) for e in events)

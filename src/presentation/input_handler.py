@@ -129,8 +129,11 @@ class InputHandler:
             return
         if self._selected_card_id is None:
             return
+        target_pos = self._grid_renderer.screen_to_tile(pos[0], pos[1])
+        if target_pos is None:
+            return
         try:
-            self._play.execute(self._selected_card_id)
+            self._play.execute(self._selected_card_id, target_pos)
             self._selected_card_id = None
             self._hand_renderer.set_selected(None)
         except (InsufficientAPError, ValueError):

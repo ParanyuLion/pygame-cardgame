@@ -1,15 +1,19 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 from src.domain.interfaces import IBattleRepository, IEventBus
 from src.domain.entities.card import CardContext
 from src.domain.events.battle_events import CardPlayed, CardDrawn, BattleEnded
 from src.domain.services.deck_manager import DeckManager
+
+if TYPE_CHECKING:
+    from src.domain.value_objects.position import Position
 
 class PlayCardUseCase:
     def __init__(self, battle_repo: IBattleRepository, event_bus: IEventBus) -> None:
         self._repo = battle_repo
         self._bus = event_bus
 
-    def execute(self, card_id: str) -> None:
+    def execute(self, card_id: str, target_pos: Position | None = None) -> None:
         state = self._repo.get()
 
         card = next((c for c in state.hand if c.id == card_id), None)
@@ -20,7 +24,8 @@ class PlayCardUseCase:
         if card.grants_ap:
             state.player.ap = min(state.player.ap + card.grants_ap, state.player.max_ap)
 
-        targets = state.grid.get_targets(state.player.position, card.pattern)
+        origin = target_pos if target_pos is not None else state.player.position
+        targets = state.grid.get_targets(origin, card.pattern)
         context = CardContext(player=state.player, targets=targets, enemies=state.enemies)
         side_events = card.apply(context)
 
