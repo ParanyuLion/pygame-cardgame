@@ -162,7 +162,61 @@ def test_targeting_wrong_tile_misses_enemy():
     state = _make_state([card])
     state.enemies = [_enemy("e1", hp=5)]
     use_case, _, bus = _make_use_case(state)
-    use_case.execute("slash_1", Position(0, 0))  # aimed at wrong tile — enemy survives
+    use_case.execute("slash_1", Position(1, 0))  # adjacent but not enemy tile — enemy survives
     assert state.enemies[0].is_alive()
     events = [call[0][0] for call in bus.publish.call_args_list]
     assert not any(isinstance(e, BattleEnded) for e in events)
+
+
+def test_targeting_out_of_range_raises_and_does_not_spend_ap():
+    card = _card("slash_1", ap_cost=1, damage=10)
+    state = _make_state([card])
+    state.enemies = [_enemy("e1", hp=5)]
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError, match="out of range"):
+        use_case.execute("slash_1", Position(3, 3))  # distance 4 from player at (1,1)
+    assert state.player.ap == 3  # AP not spent
+
+
+def _step_card(id: str) -> Card:
+    return Card(id=id, name="Step", tags=[CardTag("Move")], ap_cost=1,
+                pattern=AttackPattern.single(), damage=0)
+
+
+def test_step_card_moves_player_to_clicked_tile():
+    card = _step_card("step_1")
+    state = _make_state([card])
+    dest = Position(1, 2)  # adjacent to player at (1,1)
+    use_case, _, _ = _make_use_case(state)
+    use_case.execute("step_1", dest)
+    assert state.player.position == dest
+    assert state.grid.get_entity_position("player") == dest
+
+
+def test_step_card_discards_and_spends_ap():
+    card = _step_card("step_1")
+    state = _make_state([card], ap=3)
+    use_case, _, _ = _make_use_case(state)
+    use_case.execute("step_1", Position(2, 1))
+    assert card not in state.hand
+    assert card in state.discard
+    assert state.player.ap == 2
+
+
+def test_step_card_onto_occupied_tile_raises():
+    card = _step_card("step_1")
+    state = _make_state([card])
+    state.enemies = [_enemy("e1", hp=5)]
+    state.grid.place("e1", _ENEMY_POS)  # production always places enemies on the grid
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError, match="not passable"):
+        use_case.execute("step_1", _ENEMY_POS)
+    assert state.player.ap == 3  # AP not spent
+
+
+def test_step_card_without_target_raises():
+    card = _step_card("step_1")
+    state = _make_state([card])
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError):
+        use_case.execute("step_1")

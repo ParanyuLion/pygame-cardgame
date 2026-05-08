@@ -20,14 +20,32 @@ class PlayCardUseCase:
         if card is None:
             raise ValueError(f"Card '{card_id}' not in hand")
 
+        if target_pos is not None:
+            p = state.player.position
+            if abs(target_pos.col - p.col) + abs(target_pos.row - p.row) > 1:
+                raise ValueError("Target out of range")
+
+        if card.is_move_card():
+            if target_pos is None:
+                raise ValueError("Move card requires a target tile")
+            if not state.grid.is_passable(target_pos):
+                raise ValueError("Target tile is not passable")
+
         state.player.spend_ap(card.ap_cost)
         if card.grants_ap:
             state.player.ap = min(state.player.ap + card.grants_ap, state.player.max_ap)
 
-        origin = target_pos if target_pos is not None else state.player.position
-        targets = state.grid.get_targets(origin, card.pattern)
-        context = CardContext(player=state.player, targets=targets, enemies=state.enemies)
-        side_events = card.apply(context)
+        if card.is_move_card():
+            state.grid.remove(state.player.id)
+            move_event = state.player.move_to(target_pos)
+            state.grid.place(state.player.id, target_pos)
+            targets: list = []
+            side_events: list = [move_event]
+        else:
+            origin = target_pos if target_pos is not None else state.player.position
+            targets = state.grid.get_targets(origin, card.pattern)
+            context = CardContext(player=state.player, targets=targets, enemies=state.enemies)
+            side_events = card.apply(context)
 
         state.hand.remove(card)
         state.discard.append(card)
