@@ -15,6 +15,7 @@ class FusionEngine:
             if len(card_a.pattern.offsets) >= len(card_b.pattern.offsets)
             else card_b.pattern
         )
+        both_move = card_a.is_move_card() and card_b.is_move_card()
         return Card(
             id=f"fused_{card_a.id}_{card_b.id}",
             name=f"{card_a.name}+{card_b.name}",
@@ -24,5 +25,5 @@ class FusionEngine:
             pattern=pattern,
             grants_ap=card_a.grants_ap + card_b.grants_ap,
             draw_after_play=card_a.draw_after_play + card_b.draw_after_play,
-            # status_effect and description: Phase 4 will define merge rules
+            move_distance=card_a.move_distance + card_b.move_distance if both_move else 1,
         )

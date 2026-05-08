@@ -48,8 +48,12 @@ class HandRenderer:
         return pygame.Rect(x, HAND_Y, CARD_W, CARD_H)
 
     def card_at_point(self, point: tuple[int, int], hand: list[Card]) -> Card | None:
+        px, py = point
+        half_gap = CARD_GAP // 2
         for i, card in enumerate(hand):
-            if self.card_rect(i, len(hand)).collidepoint(point):
+            r = self.card_rect(i, len(hand))
+            if (r.left - half_gap <= px <= r.right + half_gap
+                    and r.top <= py <= r.bottom):
                 return card
         return None
 

@@ -25,6 +25,7 @@ class Card:
     damage: int
     grants_ap: int = 0
     draw_after_play: int = 0
+    move_distance: int = 1
     status_effect: str | None = None
     description: str = ""
 

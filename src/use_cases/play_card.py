@@ -22,7 +22,8 @@ class PlayCardUseCase:
 
         if target_pos is not None:
             p = state.player.position
-            if abs(target_pos.col - p.col) + abs(target_pos.row - p.row) > 1:
+            max_range = card.move_distance if card.is_move_card() else 1
+            if abs(target_pos.col - p.col) + abs(target_pos.row - p.row) > max_range:
                 raise ValueError("Target out of range")
 
         if card.is_move_card():

@@ -74,9 +74,10 @@ class BattleScene:
         if card is None:
             return
         p = state.player.position
+        max_dist = card.move_distance if card.is_move_card() else 1
         highlights = [
             pos for pos in state.grid.tiles
-            if abs(pos.col - p.col) + abs(pos.row - p.row) == 1
+            if 1 <= abs(pos.col - p.col) + abs(pos.row - p.row) <= max_dist
             and (not card.is_move_card() or state.grid.is_passable(pos))
         ]
         self._grid_renderer.render_highlights(surface, highlights, card.is_move_card())

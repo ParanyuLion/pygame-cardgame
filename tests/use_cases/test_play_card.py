@@ -220,3 +220,36 @@ def test_step_card_without_target_raises():
     use_case, _, _ = _make_use_case(state)
     with pytest.raises(ValueError):
         use_case.execute("step_1")
+
+
+def _double_step_card(id: str) -> Card:
+    return Card(id=id, name="Step+Step", tags=[CardTag("Move")], ap_cost=1,
+                pattern=AttackPattern.single(), damage=0, move_distance=2)
+
+
+def test_double_step_card_can_reach_distance_2():
+    card = _double_step_card("step_step_1")
+    state = _make_state([card])
+    dest = Position(1, 3)  # 2 tiles away from player at (1,1)
+    use_case, _, _ = _make_use_case(state)
+    use_case.execute("step_step_1", dest)
+    assert state.player.position == dest
+    assert state.grid.get_entity_position("player") == dest
+
+
+def test_double_step_card_can_also_reach_distance_1():
+    card = _double_step_card("step_step_1")
+    state = _make_state([card])
+    dest = Position(1, 2)  # 1 tile away — still valid
+    use_case, _, _ = _make_use_case(state)
+    use_case.execute("step_step_1", dest)
+    assert state.player.position == dest
+
+
+def test_single_step_card_cannot_reach_distance_2():
+    card = _step_card("step_1")
+    state = _make_state([card])
+    use_case, _, _ = _make_use_case(state)
+    with pytest.raises(ValueError, match="out of range"):
+        use_case.execute("step_1", Position(1, 3))  # 2 tiles away
+    assert state.player.ap == 3  # AP not spent
